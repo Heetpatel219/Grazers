@@ -1,14 +1,140 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grazers | Home</title>
+  <link rel="stylesheet" href="home.css" />
 </head>
 <body>
-    <h1>Welcome</h1>
-    <p><a href="/signup">Sign Up</a></p>
-    <p><a href="/signin">Sign In</a></p>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brandIcon">G</div>
+      <div class="brandText">
+        <div class="brandName">Grazers</div>
+        <div class="brandTag">FASHION COLLECTION</div>
+      </div> 
+    </div>
+
+    <div class="searchWrap">
+      <input class="searchInput" type="text" placeholder="Search clothing, accessories, wearables..." />
+    </div>
+
+    <div class="topIcons">
+      <a class="topLink" href="/signin">Sign In</a>
+
+      <a class="iconBubble" href="#">Notifications</a>
+      <a class="iconBubble" href="#">Settings</a>
+      <a class="iconBubble" href="#">User Profile</a>
+    </div>
+  </header>
+
+  <main class="layout">
+
+    <section class="main">
+      <section class="hero">
+        <h1>Welcome to Grazers</h1>
+        <p class="heroDesc">
+          Experience fashion like never before. Reserve items online, try them on in-store,
+          and earn loyalty points with every purchase.
+        </p>
+
+        <div class="heroBtns">
+          <a class="btnPink" href="/signup">Sign Up Now</a>
+          <button class="btnOutline" type="button">Browse Collection →</button>
+        </div>
+      </section>
+
+      <section class="categorySection">
+        <h2>Shop by Category</h2>
+        <p class="subText">Discover our curated collections of premium fashion and accessories</p>
+
+        <div class="categoryGrid">
+          <div class="categoryCard">
+            <div class="categoryImg imgWomen">
+              <div class="badge badgePink">2,450+ items</div>
+            </div>
+            <h3>Women’s Fashion</h3>
+            <p>Elegant dresses, chic tops, and stylish accessories</p>
+          </div>
+
+          <div class="categoryCard">
+            <div class="categoryImg imgMen">
+              <div class="badge badgeBlue">1,890+ items</div>
+            </div>
+            <h3>Men’s Fashion</h3>
+            <p>Sharp suits, casual wear, and modern essentials</p>
+          </div>
+
+          <div class="categoryCard">
+            <div class="categoryImg imgJewelry">
+              <div class="badge badgePurple">980+ items</div>
+            </div>
+            <h3>Jewelry & Accessories</h3>
+            <p>Luxury watches, statement jewelry, and designer bags</p>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <aside class="sidebar">
+
+      <div class="sideCard">
+        <div class="sideHeader">
+          <div>
+            <div class="sideTitle">Explore More</div>
+            <div class="sideSmall">Discover trending styles and new arrivals</div>
+          </div>
+        </div>
+        <button class="sideBtn" type="button">Browse Now</button>
+      </div>
+
+      <div class="sideCard">
+        <div class="sideHeader">
+          <div>
+            <div class="sideTitle">Favourites</div>
+            <div class="sideSmall">Your liked items</div>
+          </div>
+        </div>
+
+        <div class="sideRow">
+          <span>Total Items</span>
+        </div>
+
+        <button class="sideBtn" type="button">View All Favourites</button>
+      </div>
+
+      <div class="sideCard">
+        <div class="sideHeader">
+          <div>
+            <div class="sideTitle">Saved</div>
+            <div class="sideSmall">Items for later</div>
+          </div>
+        </div>
+
+        <div class="sideRow">
+          <span>Total Items</span>
+        </div>
+
+        <button class="sideBtn" type="button">View Saved Items</button>
+      </div>
+
+      <div class="sideCard">
+        <div class="sideHeader">
+          <div>
+            <div class="sideTitle">Your Activity</div>
+            <div class="sideSmall">Recent actions</div>
+          </div>
+        </div>
+
+        <div class="sideRow">
+          <span>Wishlist</span>
+        </div>
+      </div>
+
+    </aside>
+  </main>
+
 </body>
 </html>
-
