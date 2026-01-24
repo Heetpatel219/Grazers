@@ -56,6 +56,11 @@
                 <label for="terms">I agree to the Terms & Conditions</label>
             </div>
 
+            <div class="field checkbox-field">
+                <input type="checkbox" id="isOwner" name="isOwner" />
+                <label for="isOwner">Sign up as a Store owner</label>
+            </div>
+
             <button type="submit">Sign Up</button>
         </form>
 
@@ -69,6 +74,25 @@
 
     <!-- JS logic for signup -->
     <script>
+        // Make phone and address required when owner checkbox is checked
+        const isOwnerCheckbox = document.getElementById('isOwner');
+        const phoneInput = document.getElementById('phone');
+        const addressInput = document.getElementById('address');
+
+        isOwnerCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                phoneInput.required = true;
+                addressInput.required = true;
+                phoneInput.placeholder = 'Required for store owners';
+                addressInput.placeholder = 'Required for store owners';
+            } else {
+                phoneInput.required = false;
+                addressInput.required = false;
+                phoneInput.placeholder = 'Optional';
+                addressInput.placeholder = 'Optional';
+            }
+        });
+
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
@@ -86,6 +110,15 @@
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
             const address = document.getElementById('address').value;
+            const isOwner = document.getElementById('isOwner').checked;
+
+            // Validate phone and address for owners
+            if (isOwner && (!phone || !address)) {
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = 'Phone number and address are required for store owners';
+                messageEl.style.color = 'red';
+                return;
+            }
 
             const messageEl = document.getElementById('message');
 
@@ -93,7 +126,7 @@
                 const response = await fetch('/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name, password }) // backend still only needs name/password
+                    body: JSON.stringify({ name, email, password, isOwner, phone, address })
                 });
 
                 const data = await response.json();

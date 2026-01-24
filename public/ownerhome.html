@@ -7,7 +7,7 @@
 <body>
 
   <header>
-    <a href="/public/signup.html">Sign Out</a>
+    <a href="/signin" onclick="logout(event)">Sign Out</a>
 
     <h1>Owner Analytics Dashboard</h1>
     <p>Real-time store performance insights</p>
@@ -52,6 +52,18 @@
     </section>
 
   </main>
+
+  <script>
+    async function logout(e) {
+      e.preventDefault();
+      try {
+        await fetch('/logout', { method: 'POST' });
+        window.location.href = '/signin';
+      } catch (error) {
+        window.location.href = '/signin';
+      }
+    }
+  </script>
 
 </body>
 </html>

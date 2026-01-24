@@ -18,8 +18,8 @@
 
         <form id="signinForm">
             <div class="field">
-                <label for="name">Name</label>
-                <input type="text" id="name" name="name" placeholder="Enter your name" required />
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required />
             </div>
 
             <div class="field">
@@ -33,10 +33,51 @@
         <p id="message"></p>
 
         <p class="switch">
-            Don’t have an account?
+            Don't have an account?
             <a href="/signup">Sign Up</a>
         </p>
     </div>
+
+    <script>
+        document.getElementById('signinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            // Get value from the email field
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const messageEl = document.getElementById('message');
+
+            try {
+                const response = await fetch('/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    // Send email instead of name in the body
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.style.color = response.ok ? 'green' : 'red';
+
+                if (response.ok) {
+                    // Redirect based on user type
+                    if (data.isOwner) {
+                        setTimeout(() => {
+                            window.location.href = '/ownerhome.html';
+                        }, 1000);
+                    } else {
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    }
+                }
+            } catch (error) {
+                messageEl.textContent = 'Error: ' + error.message;
+                messageEl.style.color = 'red';
+            }
+        });
+    </script>
 
 </body>
 

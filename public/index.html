@@ -22,7 +22,12 @@
     </div>
 
     <div class="topIcons">
-      <a class="topLink" href="/signin">Sign In</a>
+      <a class="topLink" id="signInLink" href="/signin" style="display: none;">Sign In</a>
+      <a class="topLink" id="signUpLink" href="/signup" style="display: none;">Sign Up</a>
+      <span id="userInfo" style="display: none;">
+        <span id="userName"></span>
+        <a class="topLink" href="#" onclick="logout(event)">Sign Out</a>
+      </span>
 
       <a class="iconBubble" href="#">Notifications</a>
       <a class="iconBubble" href="#">Settings</a>
@@ -41,7 +46,7 @@
         </p>
 
         <div class="heroBtns">
-          <a class="btnPink" href="/signup">Sign Up Now</a>
+          <a class="btnPink" id="signUpBtn" href="/signup" style="display: none;">Sign Up Now</a>
           <button class="btnOutline" type="button">Browse Collection →</button>
         </div>
       </section>
@@ -135,6 +140,61 @@
 
     </aside>
   </main>
+
+  <script>
+    // Check authentication status on page load
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/check-auth');
+        const data = await response.json();
+        
+        const signInLink = document.getElementById('signInLink');
+        const signUpLink = document.getElementById('signUpLink');
+        const signUpBtn = document.getElementById('signUpBtn');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+        
+        if (data.isLoggedIn) {
+          // User is logged in - hide sign in/up buttons
+          signInLink.style.display = 'none';
+          signUpLink.style.display = 'none';
+          signUpBtn.style.display = 'none';
+          
+          // Show user info
+          userName.textContent = data.userName || data.userEmail || 'User';
+          userInfo.style.display = 'inline';
+        } else {
+          // User is not logged in - show sign in/up buttons
+          signInLink.style.display = 'inline';
+          signUpLink.style.display = 'inline';
+          signUpBtn.style.display = 'inline';
+          
+          // Hide user info
+          userInfo.style.display = 'none';
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+        // On error, show sign in/up buttons
+        document.getElementById('signInLink').style.display = 'inline';
+        document.getElementById('signUpLink').style.display = 'inline';
+        document.getElementById('signUpBtn').style.display = 'inline';
+      }
+    }
+    
+    // Logout function
+    async function logout(e) {
+      e.preventDefault();
+      try {
+        await fetch('/logout', { method: 'POST' });
+        window.location.href = '/';
+      } catch (error) {
+        window.location.href = '/';
+      }
+    }
+    
+    // Check auth when page loads
+    checkAuth();
+  </script>
 
 </body>
 </html>
