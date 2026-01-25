@@ -23,7 +23,6 @@
 
     <div class="topIcons">
       <a class="topLink" id="signInLink" href="/signin" style="display: none;">Sign In</a>
-      <a class="topLink" id="signUpLink" href="/signup" style="display: none;">Sign Up</a>
       <span id="userInfo" style="display: none;">
         <span id="userName"></span>
         <a class="topLink" href="#" onclick="logout(event)">Sign Out</a>
@@ -149,7 +148,7 @@
         const data = await response.json();
         
         const signInLink = document.getElementById('signInLink');
-        const signUpLink = document.getElementById('signUpLink');
+        
         const signUpBtn = document.getElementById('signUpBtn');
         const userInfo = document.getElementById('userInfo');
         const userName = document.getElementById('userName');
@@ -157,7 +156,7 @@
         if (data.isLoggedIn) {
           // User is logged in - hide sign in/up buttons
           signInLink.style.display = 'none';
-          signUpLink.style.display = 'none';
+         
           signUpBtn.style.display = 'none';
           
           // Show user info
@@ -165,19 +164,15 @@
           userInfo.style.display = 'inline';
         } else {
           // User is not logged in - show sign in/up buttons
-          signInLink.style.display = 'inline';
-          signUpLink.style.display = 'inline';
-          signUpBtn.style.display = 'inline';
+          if (signInLink) signInLink.style.display = 'inline';
+        
+          if (signUpBtn) signUpBtn.style.display = 'inline';
           
           // Hide user info
           userInfo.style.display = 'none';
         }
       } catch (error) {
         console.error('Error checking auth:', error);
-        // On error, show sign in/up buttons
-        document.getElementById('signInLink').style.display = 'inline';
-        document.getElementById('signUpLink').style.display = 'inline';
-        document.getElementById('signUpBtn').style.display = 'inline';
       }
     }
     
