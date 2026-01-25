@@ -2,56 +2,161 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Owner Analytics Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #f8fafb;
+      --header-bg: #e9f7f2;
+      --accent-green: #00a676;
+      --text-dark: #333;
+      --card-bg: #ffffff;
+      --border-radius: 12px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: var(--header-bg);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #d0e7df;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--accent-green);
+    }
+
+    .sign-out {
+      text-decoration: none;
+      color: var(--accent-green);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .dashboard-info {
+      text-align: right;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    section {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #edf2f0;
+      transition: transform 0.2s;
+    }
+
+    section:hover {
+      transform: translateY(-5px);
+    }
+
+    h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #777;
+      margin-top: 0;
+    }
+
+    .stat {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 10px 0;
+      color: var(--text-dark);
+    }
+
+    .change {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .positive { color: var(--accent-green); }
+    .negative { color: #e53935; }
+
+    .sub-text {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    hr { display: none; }
+  </style>
 </head>
 <body>
 
   <header>
-    <a href="/public/signup.html">Sign Out</a>
-
-    <h1>Owner Analytics Dashboard</h1>
-    <p>Real-time store performance insights</p>
-
     <div>
-      <p>Today: JAN 23, 2026</p>
+      <h1>Owner Analytics</h1>
+      <p style="margin:0; font-size: 0.8rem; color: #666;">Real-time store performance</p>
+    </div>
+    
+    <div class="dashboard-info">
+      <p id="dashboard-date" style="margin:0; font-weight: bold;"></p>
+      <a href="/public/signup.html" class="sign-out">← Sign Out</a>
     </div>
   </header>
 
-  <hr />
   <main>
-
     <section>
       <h2>Today's Revenue</h2>
-      <p>$5,420</p>
-      <p>vs $4,850 yesterday</p>
-      <p>Change: +11.8%</p>
+      <p class="stat">$5,420</p>
+      <p class="change positive">▲ +11.8%</p>
+      <p class="sub-text">vs $4,850 yesterday</p>
     </section>
 
-    <hr />
     <section>
-      <h2>Foot Traffic Today</h2>
-      <p>356 visitors</p>
-      <p>Expected: 380–420 visitors</p>
-      <p>Change: -11.2%</p>
+      <h2>Foot Traffic</h2>
+      <p class="stat">356</p>
+      <p class="change negative">▼ -11.2%</p>
+      <p class="sub-text">Expected: 380–420</p>
     </section>
 
-    <hr />
     <section>
       <h2>Total Inventory</h2>
-      <p>1279 items</p>
-      <p>Across all categories</p>
-      <p>8 categories</p>
+      <p class="stat">1,279</p>
+      <p class="sub-text">Across 8 categories</p>
+      <div style="background:#eee; height:8px; border-radius:4px; margin-top:15px;">
+        <div style="background:var(--accent-green); width:65%; height:100%; border-radius:4px;"></div>
+      </div>
     </section>
 
-    <hr />
     <section>
       <h2>Active Reservations</h2>
-      <p>4 total</p>
-      <p>1 confirmed today</p>
-      <p>3 pending</p>
+      <p class="stat">4</p>
+      <p class="sub-text"><strong style="color:var(--accent-green)">1</strong> confirmed today</p>
+      <p class="sub-text"><strong>3</strong> pending</p>
     </section>
-
   </main>
+
+  <!-- Automatic showing date -->
+  <script>
+    (function updateDate() {
+      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const today = new Date();
+      const formatted = `${months[today.getMonth()]} ${String(today.getDate()).padStart(2, "0")}, ${today.getFullYear()}`;
+      const target = document.getElementById("dashboard-date");
+      if (target) target.textContent = formatted;
+    })();
+  </script>
 
 </body>
 </html>
