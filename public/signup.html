@@ -1,40 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign Up</title>
-</head>
-<body>
-    <h1>Sign Up</h1>
-    <form id="signupForm">
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit">Sign Up</button>
-    </form>
-    <p id="message"></p>
-    <p><a href="/signin">Already have an account? Sign In</a></p>
 
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up | Fashion Hub</title>
+
+    <!-- Link to CSS -->
+    <link rel="stylesheet" href="signup.css" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <div class="auth-card">
+        <h1>Create Account</h1>
+        <p class="tagline">Join us and start shopping</p>
+
+        <form id="signupForm">
+            <div class="field">
+                <label for="fullname">Full Name</label>
+                <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required />
+            </div>
+
+            <div class="field">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="Enter your email" required />
+            </div>
+
+            <div class="field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Create a password" required />
+            </div>
+
+            <div class="field">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Confirm password"
+                    required />
+            </div>
+
+            <div class="field">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="Optional" />
+            </div>
+
+            <div class="field">
+                <label for="address">Address</label>
+                <input type="text" id="address" name="address" placeholder="Optional" />
+            </div>
+
+            <div class="field checkbox-field">
+                <input type="checkbox" id="terms" name="terms" required />
+                <label for="terms">I agree to the Terms & Conditions</label>
+            </div>
+
+            <div class="field checkbox-field">
+                <input type="checkbox" id="isOwner" name="isOwner" />
+                <label for="isOwner">Sign up as a Store owner</label>
+            </div>
+
+            <button type="submit">Sign Up</button>
+        </form>
+
+        <p id="message"></p>
+
+        <p class="switch">
+            Already have an account?
+            <a href="/signin">Sign In</a>
+        </p>
+    </div>
+
+    <!-- JS logic for signup -->
     <script>
+        // Make phone and address required when owner checkbox is checked
+        const isOwnerCheckbox = document.getElementById('isOwner');
+        const phoneInput = document.getElementById('phone');
+        const addressInput = document.getElementById('address');
+
+        isOwnerCheckbox.addEventListener('change', function() {
+            if (this.checked) {
+                phoneInput.required = true;
+                addressInput.required = true;
+                phoneInput.placeholder = 'Required for store owners';
+                addressInput.placeholder = 'Required for store owners';
+            } else {
+                phoneInput.required = false;
+                addressInput.required = false;
+                phoneInput.placeholder = 'Optional';
+                addressInput.placeholder = 'Optional';
+            }
+        });
+
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('name').value;
+
+            // Optional: password confirmation check
             const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            if (password !== confirmPassword) {
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = 'Passwords do not match';
+                messageEl.style.color = 'red';
+                return;
+            }
+
+            const name = document.getElementById('fullname').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const address = document.getElementById('address').value;
+            const isOwner = document.getElementById('isOwner').checked;
+
+            // Validate phone and address for owners
+            if (isOwner && (!phone || !address)) {
+                const messageEl = document.getElementById('message');
+                messageEl.textContent = 'Phone number and address are required for store owners';
+                messageEl.style.color = 'red';
+                return;
+            }
+
             const messageEl = document.getElementById('message');
 
             try {
                 const response = await fetch('/signup', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ name, password })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password, isOwner, phone, address })
                 });
 
                 const data = await response.json();
@@ -42,9 +134,7 @@
                 messageEl.style.color = response.ok ? 'green' : 'red';
 
                 if (response.ok) {
-                    setTimeout(() => {
-                        window.location.href = '/signin';
-                    }, 1500);
+                    setTimeout(() => { window.location.href = '/signin'; }, 1500);
                 }
             } catch (error) {
                 messageEl.textContent = 'Error: ' + error.message;
@@ -52,6 +142,7 @@
             }
         });
     </script>
-</body>
-</html>
 
+</body>
+
+</html>
