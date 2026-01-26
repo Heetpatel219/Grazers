@@ -12,7 +12,7 @@
     "body-parser": "^1.20.4",
     "express": "^4.22.1",
     "express-session": "^1.17.3",
-    "mongoose": "^8.21.0"
+    "mongoose": "^8.21.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
