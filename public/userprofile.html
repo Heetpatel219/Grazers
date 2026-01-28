@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grazers | User Profile</title>
+  <link rel="stylesheet" href="userprofile.css" />
+</head>
+<body>
+
+  <header class="profileTopbar">
+    <div class="profileTopLeft">User Profile</div>
+
+    <a class="backHome" href="/">
+      <span class="backArrow">←</span>
+      Back to Home
+    </a>
+  </header>
+
+  <main class="page">
+    <!-- Main Profile Card -->
+    <section class="profileCard">
+
+      <!-- Avatar + user info -->
+      <div class="profileLeft">
+        <div class="avatarCircle">
+          <div class="avatarIcon"></div>
+        </div>
+
+        <div class="infoBlock">
+          <div class="infoLabel">Name</div>
+          <div class="infoValue" id="profileName">User123</div>
+          <div class="infoLine"></div>
+
+          <div class="infoLabel">Username</div>
+          <div class="infoValue" id="profileUsername">@user123</div>
+          <div class="infoLine"></div>
+
+          <div class="infoLabel">Using Since:</div>
+          <div class="infoValue" id="profileSince">January 2023</div>
+        </div>
+      </div>
+
+      <!-- Loyalty points -->
+      <div class="profileMid">
+        <div class="loyaltyLabel">Loyalty Points</div>
+        <div class="loyaltyPoints" id="loyaltyPoints">1,240</div>
+
+        <div class="progressWrap">
+          <div class="progressBar">
+            <div class="progressFill" style="width: 62%;"></div>
+          </div>
+          <div class="progressText" id="progressText">1,240 / 2,000 pts</div>
+        </div>
+
+        <button class="redeemBtn" type="button">
+          <span class="giftIcon">🎁</span>
+          Redeem
+        </button>
+      </div>
+
+      <!-- Barcode -->
+      <div class="profileRight">
+        <div class="barcodeCard">
+          <div class="barcodeBars"></div>
+          <div class="barcodeNumber">9 780201 379624</div>
+        </div>
+        <div class="barcodeHint">Scan at checkout for loyalty points</div>
+      </div>
+    </section>
+
+    <!-- Saved for Try-On -->
+    <section class="sectionBlock">
+      <div class="sectionHeader">
+        <div class="sectionTitle">
+          <span class="bookmarkIcon">🔖</span>
+          Saved for Try-On
+        </div>
+        <div class="sectionChevron">›</div>
+      </div>
+
+      <div class="tryOnGrid">
+        <div class="tryCard">
+          <div class="tryTop">
+            <div class="tryStore">Fashion Plaza</div>
+            <div class="tryTime">Dec 5, 2025 at 2:00 PM</div>
+          </div>
+
+          <div class="tryImg imgRack"></div>
+
+          <div class="tryBottom">3 items reserved</div>
+        </div>
+
+        <div class="tryCard">
+          <div class="tryTop">
+            <div class="tryStore">Shoe Haven</div>
+            <div class="tryTime">Dec 6, 2025 at 11:00 AM</div>
+          </div>
+
+          <div class="tryImg imgShoes"></div>
+
+          <div class="tryBottom">2 items reserved</div>
+        </div>
+
+        <div class="tryCard">
+          <div class="tryTop">
+            <div class="tryStore">Style Central</div>
+            <div class="tryTime">Dec 7, 2025 at 4:30 PM</div>
+          </div>
+
+          <div class="tryImg imgDress"></div>
+
+          <div class="tryBottom">1 item reserved</div>
+        </div>
+      </div>
+
+      <div class="sectionNote">Items reserved for try-on at local stores</div>
+    </section>
+
+    <!-- Favourites -->
+    <section class="sectionBlock">
+      <div class="sectionHeader">
+        <div class="sectionTitle">
+          <span class="heartOutline">♡</span>
+          Favourites
+        </div>
+        <div class="sectionChevron">›</div>
+      </div>
+
+      <div class="favouritesRow">
+        <div class="favCard">
+          <div class="favImg imgSunglasses">
+            <div class="favHeart">❤</div>
+          </div>
+          <div class="favName">Sunglasses</div>
+          <div class="favStore">Optic World</div>
+        </div>
+
+        <div class="favCard">
+          <div class="favImg imgWatch">
+            <div class="favHeart">❤</div>
+          </div>
+          <div class="favName">Luxury Watch</div>
+          <div class="favStore">Time Gallery</div>
+        </div>
+
+        <div class="favCard">
+          <div class="favImg imgShirt">
+            <div class="favHeart">❤</div>
+          </div>
+          <div class="favName">Casual Shirt</div>
+          <div class="favStore">Fashion Plaza</div>
+        </div>
+
+        <div class="favCard">
+          <div class="favImg imgRunningShoes">
+            <div class="favHeart">❤</div>
+          </div>
+          <div class="favName">Running Shoes</div>
+          <div class="favStore">Sports Elite</div>
+        </div>
+
+        <div class="favCard">
+          <div class="favImg imgFormal">
+            <div class="favHeart">❤</div>
+          </div>
+          <div class="favName">Formal Dress</div>
+          <div class="favStore">Gala Collection</div>
+        </div>
+
+        <div class="favCard">
+          <div class="favImg imgJewelrySet">
+            <div class="favHeart">❤</div>
+          </div>
+          <div class="favName">Jewelry Set</div>
+          <div class="favStore">Gem Palace</div>
+        </div>
+      </div>
+
+      <div class="sectionNote">Your most loved items</div>
+    </section>
+
+    <!-- Find Stores -->
+    <section class="findStores">
+      <div class="findIconCircle">🎁</div>
+
+      <div class="findText">
+        <div class="findTitle">
+          Reserve items online, try them on at your local Grazers store
+        </div>
+        <div class="findSub">
+          Earn points with every purchase by scanning your barcode at checkout
+        </div>
+      </div>
+
+      <button class="findBtn" type="button">Find Stores</button>
+    </section>
+
+  </main>
+
+</body>
+</html>
