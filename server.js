@@ -45,6 +45,10 @@ app.get('/signin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signin.html'));
 });
 
+app.get('/userinfo', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'userinfo.html'));
+});
+
 // Sign-up route
 app.post('/signup', async (req, res) => {
   try {
@@ -105,6 +109,15 @@ app.post('/signin', async (req, res) => {
     res.status(500).json({ message: 'Error during sign-in' });
   }
 });
+
+app.get("/api/user", async (req,res)=>{
+  const email = req.query.email;
+
+  const user = await User.findOne({email});
+
+  res.json(user);
+});
+
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>User Profile</title>
+  <link rel="stylesheet" href="userinfo.css" />
+</head>
+<body>
+    
+    <header>
+        <p>User Profile</p>
+        <a href="#">← Back to Home</a>
+    </header>
+    
+    <div class="container">
+        <div class="card">
+            
+            <div class="left">
+                <div class="avatar">
+                    <span>👤</span>
+                </div>
+                
+                <div class="info">
+                    <p class="label">Name</p>
+                    <p>Alex Johnson</p>
+                    
+                    <hr>
+                    
+                    <p class="label">Username</p>
+                    <p>@alexj</p>
+                    
+                    <hr>
+                    
+                    <p class="label">Using Since:</p>
+                    <p>January 2023</p>
+                </div>
+            </div>
+            
+            <div class="center">
+
+                <div class="pointsHeader">
+                    <p class="points-label">Loyalty Points</p>
+                    <h1 id="points">1,240</h1>
+                </div>
+
+                <div class="progress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 62%;"></div>
+                    </div>
+                    <div class="progressText" id="progressText">1,240 / 2,000 pts</div>
+                </div>
+                
+                <button class="redeem" type="button">
+                    <span class="giftIcon">🎁</span>
+                    Redeem
+                </button>
+            </div>
+            
+            <div class="right">
+                <div class="barcode-box">
+                    <div class="barcode"></div>
+                    <p class="barcode-num">9 780201 379624</p>
+                </div>
+                <div class="scan-text">Scan at checkout for loyalty points</div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
