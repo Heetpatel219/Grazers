@@ -4,7 +4,9 @@ const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
-
+const Shop = require('./models/Shop');
+const Category = require('./models/Category');
+const Product = require('./models/Product');
 const app = express();
 const PORT = 3000;
 
@@ -191,6 +193,32 @@ app.post('/signin', async (req, res) => {
     res.status(500).json({ message: 'Error during sign-in' });
   }
 });
+
+app.get('/api/shops', async (req, res) => {
+  try {
+    const shops = await Shop.find();
+
+    const result = [];
+
+    for (const shop of shops) {
+      const categories = await Category.find({ shop: shop._id });
+
+      result.push({
+        name: shop.name,
+        categoryCount: categories.length,
+        categories: categories.map(c => c.name)
+      });
+    }
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ error: 'Failed to fetch shops' });
+  }
+});
+
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
