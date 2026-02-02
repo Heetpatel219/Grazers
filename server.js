@@ -15,11 +15,11 @@ app.use(express.static('public'));
 
 // Session middleware
 app.use(session({
-  secret: 'your-secret-key-change-this-in-production',
+  secret: 'mysecretkey',
   resave: false,
   saveUninitialized: false,
   cookie: { 
-    secure: false, // Set to true if using HTTPS
+    secure: false,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
 }));
@@ -151,10 +151,9 @@ app.post('/signup', async (req, res) => {
   }
 });
 
-// Sign-in route (Updated for Email and Role-based access)
+// Sign-in route
 app.post('/signin', async (req, res) => {
   try {
-    // 1. Destructure email instead of name
     const { email, password } = req.body;
 
     if (!email || !password) {
@@ -162,7 +161,7 @@ app.post('/signin', async (req, res) => {
     }
 
     // 2. Find user in MongoDB by email
-    // 
+  
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
@@ -175,16 +174,13 @@ app.post('/signin', async (req, res) => {
     }
 
     // 4. Create session
-    // We store the role/isOwner status so middleware can check it later
     req.session.userId = user._id;
     req.session.userName = user.name;
     req.session.userEmail = user.email;
     
-    // Ensure this matches the field name in your MongoDB (isOwner or role)
     req.session.isOwner = user.isOwner || false;
 
-    // 5. Return success with user type for frontend redirection
-    // 
+    // 5. Return success 
     res.status(200).json({ 
       message: 'Sign-in successful',
       isOwner: user.isOwner || false
