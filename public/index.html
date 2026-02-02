@@ -51,34 +51,9 @@
       </section>
 
       <section class="categorySection">
-        <h2>Shop by Category</h2>
+        <h2>Shop</h2>
         <p class="subText">Discover our curated collections of premium fashion and accessories</p>
-
-        <div class="categoryGrid">
-          <div class="categoryCard">
-            <div class="categoryImg imgWomen">
-              <div class="badge badgePink">2,450+ items</div>
-            </div>
-            <h3>Women’s Fashion</h3>
-            <p>Elegant dresses, chic tops, and stylish accessories</p>
-          </div>
-
-          <div class="categoryCard">
-            <div class="categoryImg imgMen">
-              <div class="badge badgeBlue">1,890+ items</div>
-            </div>
-            <h3>Men’s Fashion</h3>
-            <p>Sharp suits, casual wear, and modern essentials</p>
-          </div>
-
-          <div class="categoryCard">
-            <div class="categoryImg imgJewelry">
-              <div class="badge badgePurple">980+ items</div>
-            </div>
-            <h3>Jewelry & Accessories</h3>
-            <p>Luxury watches, statement jewelry, and designer bags</p>
-          </div>
-        </div>
+        <div class="categoryGrid" id="shopGrid"></div>
       </section>
     </section>
 
@@ -175,7 +150,33 @@
         console.error('Error checking auth:', error);
       }
     }
-    
+    async function loadShops() {
+        try {
+            const res = await fetch('/api/shops');
+            const shops = await res.json();
+
+            const grid = document.getElementById('shopGrid');
+
+            shops.forEach(shop => {
+                const card = document.createElement('div');
+                card.className = 'categoryCard';
+
+                card.innerHTML = `
+                    <div class="categoryImg imgWomen">
+                        <div class="badge badgePink">${shop.categoryCount} categories</div>
+                        </div>
+                    <h3>${shop.name}</h3>
+                    <p>${shop.categories.slice(0, 3).join(', ')}</p>
+                `;
+
+            grid.appendChild(card);
+        });
+
+    } catch (err) {
+        console.error('Failed to load shops', err);
+    }
+    }
+
     // Logout function
     async function logout(e) {
       e.preventDefault();
@@ -189,6 +190,7 @@
     
     // Check auth when page loads
     checkAuth();
+    loadShops();
   </script>
 
 </body>
