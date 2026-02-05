@@ -74,7 +74,7 @@
 
     <!-- JS logic for signup -->
     <script>
-        // Make phone and address required when owner checkbox is checked
+        // When signing up as an owner, enforce phone and address as required fields
         const isOwnerCheckbox = document.getElementById('isOwner');
         const phoneInput = document.getElementById('phone');
         const addressInput = document.getElementById('address');
@@ -93,10 +93,11 @@
             }
         });
 
+        // Handle signup form submission: validate fields and send payload to backend
         document.getElementById('signupForm').addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            // Optional: password confirmation check
+            // Basic password confirmation check on the client before hitting the server
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             if (password !== confirmPassword) {

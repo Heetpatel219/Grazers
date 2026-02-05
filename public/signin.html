@@ -39,9 +39,9 @@
     </div>
 
     <script>
+        // Handle sign-in form submission: post credentials and redirect based on user type
         document.getElementById('signinForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            // Get value from the email field
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const messageEl = document.getElementById('message');
@@ -52,7 +52,6 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    // Send email instead of name in the body
                     body: JSON.stringify({ email, password })
                 });
 
@@ -61,7 +60,7 @@
                 messageEl.style.color = response.ok ? 'green' : 'red';
 
                 if (response.ok) {
-                    // Redirect based on user type
+                    // Owners go to the analytics dashboard; regular users return to the storefront
                     if (data.isOwner) {
                         setTimeout(() => {
                             window.location.href = '/ownerhome.html';

@@ -1,0 +1,383 @@
+.brandLink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.profilePage {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 28px 20px;
+  font-family: 'Poppins', Arial, sans-serif;
+}
+
+.profileTop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  margin-bottom: 36px;
+}
+
+@media (max-width: 700px) {
+  .profileTop {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profileUser {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+.profileAvatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  margin: 0 auto 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #c8e6c9, #a5d6a7);
+  color: #0b7a58;
+}
+
+.profileName {
+  margin: 0 0 6px;
+  font-size: 24px;
+  color: #102018;
+}
+
+.profileUsername {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: rgba(16, 32, 24, 0.6);
+}
+
+.profileSince {
+  margin: 0;
+  font-size: 13px;
+  color: rgba(16, 32, 24, 0.55);
+}
+
+.profileLoyalty {
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.loyaltyTitle {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: #102018;
+}
+
+.loyaltyPoints {
+  margin: 0 0 12px;
+  font-size: 36px;
+  font-weight: bold;
+  color: #0b7a58;
+}
+
+.loyaltyBarWrap {
+  height: 12px;
+  background: rgba(11, 122, 88, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 8px;
+}
+
+.loyaltyBar {
+  height: 100%;
+  background: linear-gradient(90deg, #0b7a58, #0a5f48);
+  border-radius: 999px;
+  width: 0%;
+  transition: width 0.3s;
+}
+
+.loyaltyLabel {
+  margin: 0 0 16px;
+  font-size: 13px;
+  color: rgba(16, 32, 24, 0.6);
+}
+
+.loyaltyRedeemBtn {
+  padding: 12px 20px;
+  border-radius: 12px;
+  border: none;
+  background: #0b7a58;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.loyaltyRedeemBtn:hover {
+  background: #0a5f48;
+}
+
+.loyaltyBarcodeWrap {
+  text-align: center;
+  padding-top: 16px;
+  border-top: 1px solid rgba(0,0,0,0.08);
+}
+
+.loyaltyBarcode {
+  font-family: monospace;
+  font-size: 18px;
+  letter-spacing: 2px;
+  margin-bottom: 8px;
+  color: #102018;
+}
+
+.loyaltyBarcodeText {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(16, 32, 24, 0.55);
+}
+
+.profileRewards {
+  margin-bottom: 36px;
+}
+
+.profileRewards h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  color: #102018;
+}
+
+.profileRewards .subText {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: rgba(16, 32, 24, 0.6);
+}
+
+.rewardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.rewardCard {
+  background: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.08);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rewardCard strong {
+  font-size: 14px;
+  color: #102018;
+}
+
+.rewardCard span {
+  font-size: 13px;
+  color: #0b7a58;
+  font-weight: bold;
+}
+
+.profileSaved {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.savedHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.savedHeader h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #102018;
+}
+
+.savedIcon {
+  margin-right: 8px;
+}
+
+.savedViewAll {
+  font-weight: bold;
+  color: #0b7a58;
+  text-decoration: none;
+}
+
+.savedViewAll:hover {
+  text-decoration: underline;
+}
+
+.savedScroll {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  min-height: 180px;
+}
+
+.savedScroll::-webkit-scrollbar {
+  height: 8px;
+}
+
+.savedScroll::-webkit-scrollbar-thumb {
+  background: rgba(11, 122, 88, 0.3);
+  border-radius: 4px;
+}
+
+.savedCard {
+  flex: 0 0 220px;
+  background: #f8f9fa;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(0,0,0,0.06);
+}
+
+.savedCardImg {
+  height: 140px;
+  overflow: hidden;
+  background: #eee;
+}
+
+.savedCardImg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.savedCardBody {
+  padding: 12px 14px;
+}
+
+.savedCardBody h3 {
+  margin: 0 0 4px;
+  font-size: 14px;
+  color: #102018;
+  line-height: 1.3;
+}
+
+.savedCardStore {
+  margin: 0 0 6px;
+  font-size: 12px;
+  color: rgba(16, 32, 24, 0.6);
+}
+
+.savedCardPrice {
+  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #0b7a58;
+}
+
+.savedCardRemove {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: white;
+  font-size: 12px;
+  cursor: pointer;
+  color: #666;
+}
+
+.savedCardRemove:hover {
+  background: #fee;
+  color: #c00;
+}
+
+.redeemModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.redeemModal.open {
+  display: flex;
+}
+
+.redeemModalContent {
+  background: white;
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.redeemModalContent h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  color: #102018;
+}
+
+.redeemModalSub {
+  margin: 0 0 20px;
+  font-size: 14px;
+  color: rgba(16, 32, 24, 0.6);
+}
+
+.redeemOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.redeemOption {
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 2px solid #0b7a58;
+  background: white;
+  color: #0b7a58;
+  font-weight: bold;
+  cursor: pointer;
+  text-align: left;
+}
+
+.redeemOption:hover:not(.disabled) {
+  background: #0b7a58;
+  color: white;
+}
+
+.redeemOption.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: #ccc;
+  color: #999;
+}
+
+.redeemModalClose {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.redeemModalClose:hover {
+  background: #eee;
+}
+
+.profilePage .loadingText,
+.profilePage .emptyHint {
+  color: rgba(16, 32, 24, 0.5);
+  padding: 20px;
+}

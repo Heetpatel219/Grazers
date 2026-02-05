@@ -17,9 +17,9 @@
       </div> 
     </div>
 
-    <div class="searchWrap">
-      <input class="searchInput" type="text" placeholder="Search clothing, accessories, wearables..." />
-    </div>
+    <form class="searchWrap" id="searchForm">
+      <input class="searchInput" id="searchBar" type="text" placeholder="Search clothing, accessories, wearables..." autocomplete="off" />
+    </form>
 
     <div class="topIcons">
       <a class="topLink" id="signInLink" href="/signin" style="display: none;">Sign In</a>
@@ -30,12 +30,11 @@
 
       <a class="iconBubble" href="#">Notifications</a>
       <a class="iconBubble" href="#">Settings</a>
-      <a class="iconBubble" href="#">User Profile</a>
+      <a class="iconBubble profileLink" href="/profile" id="profileLink" style="display: none;">User Profile</a>
     </div>
   </header>
 
   <main class="layout">
-
     <section class="main">
       <section class="hero">
         <h1>Welcome to Grazers</h1>
@@ -46,29 +45,30 @@
 
         <div class="heroBtns">
           <a class="btnPink" id="signUpBtn" href="/signup" style="display: none;">Sign Up Now</a>
-          <button class="btnOutline" type="button">Browse Collection →</button>
+          <a class="btnOutline" href="#browse-products" id="heroBrowseBtn">Browse Products →</a>
         </div>
       </section>
 
-      <section class="categorySection">
-        <h2>Shop</h2>
-        <p class="subText">Discover our curated collections of premium fashion and accessories</p>
-        <div class="categoryGrid" id="shopGrid"></div>
+      <section class="categorySection" id="browse-products">
+        <h2>Browse Products</h2>
+        <p class="subText">Discover our curated premium fashion and accessories from the collection</p>
+        <div class="featuredStrip" id="featuredStrip"></div>
+        <div class="sectionLabel">All products</div>
+        <div class="categoryGrid productGrid" id="productGrid">
+          <p class="loadingText">Loading products…</p>
+        </div>
+      </section>
+
+      <section class="categorySection" id="browse-by-shop">
+        <h2>Browse by Shop</h2>
+        <p class="subText">Explore products by store</p>
+        <div class="shopGrid" id="shopGrid">
+          <p class="loadingText">Loading shops…</p>
+        </div>
       </section>
     </section>
 
     <aside class="sidebar">
-
-      <div class="sideCard">
-        <div class="sideHeader">
-          <div>
-            <div class="sideTitle">Explore More</div>
-            <div class="sideSmall">Discover trending styles and new arrivals</div>
-          </div>
-        </div>
-        <button class="sideBtn" type="button">Browse Now</button>
-      </div>
-
       <div class="sideCard">
         <div class="sideHeader">
           <div>
@@ -76,108 +76,279 @@
             <div class="sideSmall">Your liked items</div>
           </div>
         </div>
-
         <div class="sideRow">
-          <span>Total Items</span>
+          <span id="favCount">0 Items</span>
         </div>
-
-        <button class="sideBtn" type="button">View All Favourites</button>
+        <a href="/profile" class="sideBtn sideBtnLink">View All Favourites</a>
       </div>
 
       <div class="sideCard">
         <div class="sideHeader">
           <div>
-            <div class="sideTitle">Saved</div>
-            <div class="sideSmall">Items for later</div>
+            <div class="sideTitle">Your Cart</div>
+            <div class="sideSmall">Items ready for try-on</div>
           </div>
         </div>
-
         <div class="sideRow">
-          <span>Total Items</span>
+          <span id="cartCount">0 Items</span>
         </div>
-
-        <button class="sideBtn" type="button">View Saved Items</button>
+        <button class="sideBtn" type="button">Go to Cart</button>
       </div>
-
-      <div class="sideCard">
-        <div class="sideHeader">
-          <div>
-            <div class="sideTitle">Your Activity</div>
-            <div class="sideSmall">Recent actions</div>
-          </div>
-        </div>
-
-        <div class="sideRow">
-          <span>Wishlist</span>
-        </div>
-      </div>
-
     </aside>
   </main>
 
   <script>
-    // Check authentication status on page load
+    // Home page client logic: auth state, product listing, favourites, search and loyalty actions
+    let favoriteIds = [];
+
+    // Check auth status and update header UI based on the current session
     async function checkAuth() {
       try {
         const response = await fetch('/api/check-auth');
         const data = await response.json();
         
         const signInLink = document.getElementById('signInLink');
-        
         const signUpBtn = document.getElementById('signUpBtn');
         const userInfo = document.getElementById('userInfo');
         const userName = document.getElementById('userName');
         
         if (data.isLoggedIn) {
-          // User is logged in - hide sign in/up buttons
-          signInLink.style.display = 'none';
-         
-          signUpBtn.style.display = 'none';
-          
-          // Show user info
-          userName.textContent = data.userName || data.userEmail || 'User';
+          if (signInLink) signInLink.style.display = 'none';
+          if (signUpBtn) signUpBtn.style.display = 'none';
+          userName.textContent = data.userName || 'User';
           userInfo.style.display = 'inline';
+          const pl = document.getElementById('profileLink');
+          if (pl) pl.style.display = 'inline-flex';
+          await loadFavorites();
         } else {
-          // User is not logged in - show sign in/up buttons
           if (signInLink) signInLink.style.display = 'inline';
-        
           if (signUpBtn) signUpBtn.style.display = 'inline';
-          
-          // Hide user info
           userInfo.style.display = 'none';
+          const pl = document.getElementById('profileLink');
+          if (pl) pl.style.display = 'none';
+          updateFavCount(0);
         }
       } catch (error) {
         console.error('Error checking auth:', error);
       }
     }
-    async function loadShops() {
-        try {
-            const res = await fetch('/api/shops');
-            const shops = await res.json();
 
-            const grid = document.getElementById('shopGrid');
+    async function loadFavorites() {
+      try {
+        const res = await fetch('/api/favorites');
+        if (res.status === 401) return;
+        const data = await res.json();
+        favoriteIds = data.favoriteIds || [];
+        updateFavCount(favoriteIds.length);
+      } catch (e) {
+        console.error('Load favorites error:', e);
+      }
+    }
 
-            shops.forEach(shop => {
-                const card = document.createElement('div');
-                card.className = 'categoryCard';
+    function updateFavCount(n) {
+      const el = document.getElementById('favCount');
+      if (el) el.textContent = n + ' Item' + (n !== 1 ? 's' : '');
+    }
 
-                card.innerHTML = `
-                    <div class="categoryImg imgWomen">
-                        <div class="badge badgePink">${shop.categoryCount} categories</div>
-                        </div>
-                    <h3>${shop.name}</h3>
-                    <p>${shop.categories.slice(0, 3).join(', ')}</p>
-                `;
+    function renderProductCard(item, isFav) {
+      const cat = (item.category || '').toUpperCase();
+      const img = item.images || '';
+      const title = item.title || 'Product';
+      const price = typeof item.price === 'number' ? item.price.toFixed(2) : (item.price || '0.00');
+      const store = item.store_name || '';
+      const id = item.id;
+      const favClass = isFav ? ' productFavBtn active' : ' productFavBtn';
+      const favIcon = isFav ? '♥' : '♡';
+      return `
+        <div class="productCard" data-product-id="${id}">
+          <div class="productCardImg">
+            <button type="button" class="${favClass}" data-product-id="${id}" title="${isFav ? 'Remove from favourites' : 'Add to favourites'}" aria-label="Favorite">${favIcon}</button>
+            <img src="${img}" alt="${title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect fill=%22%23eee%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>No image</text></svg>'">
+            <span class="productBadge ${item.is_featured ? 'badgePink' : (item.is_best_seller ? 'badgePurple' : 'badgeBlue')}">${cat}</span>
+          </div>
+          <div class="productCardBody">
+            <h3>${title}</h3>
+            ${store ? `<p class="productStore">${store}</p>` : ''}
+            <p class="productPrice">$${price}</p>
+            <button type="button" class="productBtn reserveBtn" data-price="${item.price}" data-product-id="${id}">Reserve</button>
+          </div>
+        </div>
+      `;
+    }
 
-            grid.appendChild(card);
+    // Load a small strip of featured products for the hero section
+    async function loadFeatured() {
+      const strip = document.getElementById('featuredStrip');
+      if (!strip) return;
+      try {
+        const response = await fetch('/api/products?featured=true');
+        const products = await response.json();
+        strip.innerHTML = '';
+        if (products.length === 0) {
+          strip.innerHTML = '<p class="emptyHint">No featured products right now.</p>';
+          return;
+        }
+        products.slice(0, 4).forEach(item => {
+          strip.insertAdjacentHTML('beforeend', renderProductCard(item, favoriteIds.includes(item.id)));
         });
-
-    } catch (err) {
-        console.error('Failed to load shops', err);
+      } catch (err) {
+        console.error('Failed to load featured:', err);
+        strip.innerHTML = '<p class="emptyHint">Could not load featured products.</p>';
+      }
     }
+
+    // Load all products, optionally filtered by shop or free-text search query
+    async function loadProducts(searchQ) {
+      const grid = document.getElementById('productGrid');
+      if (!grid) return;
+      const params = new URLSearchParams(window.location.search);
+      const shop = params.get('shop');
+      const q = typeof searchQ === 'string' ? searchQ : params.get('q') || '';
+      let url = '/api/products?';
+      if (shop) url += 'shop=' + encodeURIComponent(shop) + '&';
+      if (q) url += 'q=' + encodeURIComponent(q.trim());
+      url = url.replace(/\?$/, '') || '/api/products';
+      try {
+        const response = await fetch(url);
+        const products = await response.json();
+        grid.innerHTML = '';
+        if (products.length === 0) {
+          grid.innerHTML = '<p class="emptyHint">' + (q ? 'No products match your search.' : (shop ? 'No products for this shop.' : 'No products in the collection yet.')) + '</p>';
+          return;
+        }
+        const sectionLabel = document.querySelector('#browse-products .sectionLabel');
+        if (sectionLabel) {
+          if (q) sectionLabel.textContent = 'Search: "' + q + '"';
+          else if (shop) sectionLabel.textContent = 'Products from ' + shop;
+          else sectionLabel.textContent = 'All products';
+        }
+        products.forEach(item => {
+          grid.insertAdjacentHTML('beforeend', renderProductCard(item, favoriteIds.includes(item.id)));
+        });
+        if ((shop || q) && window.location.hash === '#browse-products') {
+          document.getElementById('browse-products').scrollIntoView({ behavior: 'smooth' });
+        }
+      } catch (err) {
+        console.error('Failed to load products:', err);
+        grid.innerHTML = '<p class="emptyHint">Error loading products.</p>';
+      }
     }
 
-    // Logout function
+    // Load shops derived from the Product collection so "Browse by Shop" stays in sync with inventory
+    async function loadShops() {
+      const grid = document.getElementById('shopGrid');
+      if (!grid) return;
+      try {
+        const response = await fetch('/api/shops-from-products');
+        const shops = await response.json();
+        grid.innerHTML = '';
+        if (shops.length === 0) {
+          grid.innerHTML = '<p class="emptyHint">No shops yet. Add products to see shops here.</p>';
+          return;
+        }
+        shops.forEach(shop => {
+          const name = shop.name || 'Shop';
+          const count = shop.productCount || 0;
+          grid.insertAdjacentHTML('beforeend', `
+            <a href="/?shop=${encodeURIComponent(name)}#browse-products" class="shopCard">
+              <div class="shopCardIcon">${name.charAt(0).toUpperCase()}</div>
+              <div class="shopCardInfo">
+                <strong>${name}</strong>
+                <span>${count} product${count !== 1 ? 's' : ''}</span>
+              </div>
+              <span class="shopCardArrow">→</span>
+            </a>
+          `);
+        });
+      } catch (err) {
+        console.error('Failed to load shops:', err);
+        grid.innerHTML = '<p class="emptyHint">Error loading shops.</p>';
+      }
+    }
+
+    // Toggle a product as favourite for the current user (delegated click handler)
+    document.addEventListener('click', async function(e) {
+      const favBtn = e.target.closest('.productFavBtn');
+      if (!favBtn) return;
+      const productId = parseInt(favBtn.dataset.productId, 10);
+      if (!Number.isInteger(productId)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const isFav = favoriteIds.includes(productId);
+      try {
+        if (isFav) {
+          const res = await fetch('/api/favorites/' + productId, { method: 'DELETE' });
+          if (res.ok) {
+            const data = await res.json();
+            favoriteIds = data.favoriteIds || [];
+          }
+        } else {
+          const res = await fetch('/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
+          });
+          if (res.status === 401) {
+            alert('Please sign in to add favourites.');
+            return;
+          }
+          if (res.ok) {
+            const data = await res.json();
+            favoriteIds = data.favoriteIds || [];
+          }
+        }
+        updateFavCount(favoriteIds.length);
+        favBtn.classList.toggle('active', favoriteIds.includes(productId));
+        favBtn.textContent = favoriteIds.includes(productId) ? '♥' : '♡';
+      } catch (err) {
+        console.error('Favorite toggle error:', err);
+      }
+    });
+
+    // Reserving an item earns loyalty points (1 point per $1, rounded down)
+    document.addEventListener('click', async function(e) {
+      const btn = e.target.closest('.reserveBtn');
+      if (!btn) return;
+      const price = parseFloat(btn.dataset.price);
+      const productId = btn.dataset.productId;
+      if (!Number.isFinite(price) || price <= 0) return;
+      try {
+        const res = await fetch('/api/loyalty/earn', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ amount: price })
+        });
+        if (res.status === 401) {
+          alert('Please sign in to reserve and earn points.');
+          return;
+        }
+        if (res.ok) {
+          const data = await res.json();
+          alert('Reserved! You earned ' + Math.floor(price) + ' loyalty points. Total: ' + data.points + ' pts.');
+        }
+      } catch (err) {
+        console.error('Reserve error:', err);
+      }
+    });
+
+    // Search: submit handler and debounced input for a smoother UX
+    let searchDebounce;
+    document.getElementById('searchForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const q = document.getElementById('searchBar').value.trim();
+      loadProducts(q);
+      if (q) window.history.replaceState({}, '', '?q=' + encodeURIComponent(q) + (window.location.hash || ''));
+    });
+    document.getElementById('searchBar').addEventListener('input', function() {
+      clearTimeout(searchDebounce);
+      const q = this.value.trim();
+      searchDebounce = setTimeout(function() {
+        loadProducts(q);
+        if (q) window.history.replaceState({}, '', '?q=' + encodeURIComponent(q) + (window.location.hash || ''));
+      }, 400);
+    });
+
+    // Logout helper used by header link
     async function logout(e) {
       e.preventDefault();
       try {
@@ -187,11 +358,14 @@
         window.location.href = '/';
       }
     }
-    
-    // Check auth when page loads
-    checkAuth();
-    loadShops();
-  </script>
 
+    // Initial Load
+    (async function init() {
+      await checkAuth();
+      loadFeatured();
+      loadProducts();
+      loadShops();
+    })();
+  </script>
 </body>
 </html>

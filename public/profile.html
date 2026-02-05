@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile | Grazers</title>
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="profile.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <a href="/" class="brandLink">
+        <div class="brandIcon">G</div>
+        <div class="brandText">
+          <div class="brandName">Grazers</div>
+          <div class="brandTag">FASHION COLLECTION</div>
+        </div>
+      </a>
+    </div>
+    <div class="searchWrap">
+      <input class="searchInput" type="text" placeholder="Search..." disabled />
+    </div>
+    <div class="topIcons">
+      <a class="topLink" href="/">Home</a>
+      <span id="userInfo">
+        <span id="userName"></span>
+        <a class="topLink" href="#" onclick="logout(event)">Sign Out</a>
+      </span>
+    </div>
+  </header>
+
+  <main class="profilePage">
+    <section class="profileTop">
+      <div class="profileUser">
+        <div class="profileAvatar" id="profileAvatar"></div>
+        <h1 class="profileName" id="profileName">—</h1>
+        <p class="profileUsername" id="profileUsername">—</p>
+        <p class="profileSince">Using Since: <span id="profileSince">—</span></p>
+      </div>
+      <div class="profileLoyalty">
+        <h2 class="loyaltyTitle">Loyalty Points</h2>
+        <p class="loyaltyPoints" id="loyaltyPoints">0</p>
+        <div class="loyaltyBarWrap">
+          <div class="loyaltyBar" id="loyaltyBar"></div>
+        </div>
+        <p class="loyaltyLabel" id="loyaltyLabel">0 / 2,000 pts</p>
+        <button type="button" class="loyaltyRedeemBtn" id="redeemBtn">Redeem</button>
+        <div class="loyaltyBarcodeWrap">
+          <div class="loyaltyBarcode" id="loyaltyBarcode"></div>
+          <p class="loyaltyBarcodeText">Scan at checkout for loyalty points</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="profileRewards" id="rewardsSection">
+      <h2>Rewards</h2>
+      <p class="subText">Earn 1 point per $1 spent. Redeem below.</p>
+      <div class="rewardsGrid" id="rewardsGrid"></div>
+    </section>
+
+    <section class="profileSaved">
+      <div class="savedHeader">
+        <h2><span class="savedIcon">🔖</span> Saved for Try-On</h2>
+        <a href="/#browse-products" class="savedViewAll">View all →</a>
+      </div>
+      <div class="savedScroll" id="savedScroll">
+        <p class="loadingText" id="savedLoading">Loading…</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="redeemModal" id="redeemModal">
+    <div class="redeemModalContent">
+      <h3>Redeem reward</h3>
+      <p class="redeemModalSub">Choose a reward to redeem with your points.</p>
+      <div class="redeemOptions" id="redeemOptions"></div>
+      <button type="button" class="redeemModalClose" id="redeemModalClose">Close</button>
+    </div>
+  </div>
+
+  <script>
+    let profile = null;
+    let rewards = [];
+
+    async function loadProfile() {
+      try {
+        const res = await fetch('/api/profile');
+        if (res.status === 401) {
+          window.location.href = '/signin';
+          return;
+        }
+        profile = await res.json();
+        renderProfile();
+        renderSaved();
+      } catch (e) {
+        console.error(e);
+        document.getElementById('profileName').textContent = 'Error loading profile';
+      }
+    }
+
+    function formatDate(d) {
+      if (!d) return '—';
+      const date = new Date(d);
+      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+    }
+
+    function renderProfile() {
+      const name = profile.name || 'User';
+      const username = profile.username || (profile.email && profile.email.split('@')[0]) || name.replace(/\s+/g, '').toLowerCase();
+      const displayUsername = username.startsWith('@') ? username : '@' + username;
+      document.getElementById('profileName').textContent = name;
+      document.getElementById('profileUsername').textContent = displayUsername;
+      document.getElementById('profileSince').textContent = formatDate(profile.createdAt);
+      document.getElementById('userName').textContent = name;
+
+      const initial = name.charAt(0).toUpperCase();
+      const avatar = document.getElementById('profileAvatar');
+      avatar.textContent = initial;
+      avatar.style.background = 'linear-gradient(135deg, #0b7a58, #0a5f48)';
+      avatar.style.color = 'white';
+
+      const points = profile.loyaltyPoints || 0;
+      const maxPts = 2000;
+      document.getElementById('loyaltyPoints').textContent = points.toLocaleString();
+      document.getElementById('loyaltyLabel').textContent = points.toLocaleString() + ' / ' + maxPts.toLocaleString() + ' pts';
+      document.getElementById('loyaltyBar').style.width = Math.min(100, (points / maxPts) * 100) + '%';
+
+      const barcodeEl = document.getElementById('loyaltyBarcode');
+      barcodeEl.textContent = profile._id ? String(profile._id).slice(-12).replace(/\D/g, '0').padEnd(12, '0') : '9780201379624';
+    }
+
+    async function loadRewards() {
+      try {
+        const res = await fetch('/api/loyalty/rewards');
+        rewards = await res.json();
+        const grid = document.getElementById('rewardsGrid');
+        grid.innerHTML = rewards.map(r => `
+          <div class="rewardCard">
+            <strong>${r.name}</strong>
+            <span>${r.points} pts</span>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function renderSaved() {
+      const container = document.getElementById('savedScroll');
+      const products = profile.favoriteProducts || [];
+      container.innerHTML = '';
+      if (products.length === 0) {
+        container.innerHTML = '<p class="emptyHint">No saved items. Add favorites from the home page.</p>';
+        return;
+      }
+      products.forEach(p => {
+        const price = typeof p.price === 'number' ? p.price.toFixed(2) : (p.price || '0.00');
+        const card = document.createElement('div');
+        card.className = 'savedCard';
+        card.innerHTML = `
+          <div class="savedCardImg">
+            <img src="${p.images || ''}" alt="${p.title || 'Product'}" onerror="this.style.background='#eee'">
+          </div>
+          <div class="savedCardBody">
+            <h3>${p.title || 'Product'}</h3>
+            <p class="savedCardStore">${p.store_name || ''}</p>
+            <p class="savedCardPrice">$${price}</p>
+            <button type="button" class="savedCardRemove" data-id="${p.id}">Remove</button>
+          </div>
+        `;
+        card.querySelector('.savedCardRemove').addEventListener('click', () => removeFavorite(p.id, card));
+        container.appendChild(card);
+      });
+    }
+
+    async function removeFavorite(productId, cardEl) {
+      try {
+        await fetch('/api/favorites/' + productId, { method: 'DELETE' });
+        profile.favoriteProducts = (profile.favoriteProducts || []).filter(p => p.id !== productId);
+        if (cardEl && cardEl.parentNode) cardEl.remove();
+        if (document.querySelectorAll('.savedCard').length === 0) {
+          document.getElementById('savedScroll').innerHTML = '<p class="emptyHint">No saved items.</p>';
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    document.getElementById('redeemBtn').addEventListener('click', () => {
+      document.getElementById('redeemModal').classList.add('open');
+      const opts = document.getElementById('redeemOptions');
+      const points = profile.loyaltyPoints || 0;
+      opts.innerHTML = rewards.map(r => {
+        const canRedeem = points >= r.points;
+        return `
+          <button type="button" class="redeemOption ${canRedeem ? '' : 'disabled'}" ${!canRedeem ? 'disabled' : ''} data-id="${r.id}" data-points="${r.points}">
+            ${r.name} — ${r.points} pts
+          </button>
+        `;
+      }).join('');
+      opts.querySelectorAll('.redeemOption:not(.disabled)').forEach(btn => {
+        btn.addEventListener('click', () => doRedeem(btn.dataset.id));
+      });
+    });
+
+    document.getElementById('redeemModalClose').addEventListener('click', () => {
+      document.getElementById('redeemModal').classList.remove('open');
+    });
+
+    document.getElementById('redeemModal').addEventListener('click', (e) => {
+      if (e.target.id === 'redeemModal') e.target.classList.remove('open');
+    });
+
+    async function doRedeem(rewardId) {
+      try {
+        const res = await fetch('/api/loyalty/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ rewardId })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          profile.loyaltyPoints = data.points;
+          renderProfile();
+          document.getElementById('redeemModal').classList.remove('open');
+          alert('Reward redeemed successfully!');
+        } else {
+          alert(data.error || 'Could not redeem');
+        }
+      } catch (e) {
+        alert('Error redeeming');
+      }
+    }
+
+    async function logout(e) {
+      e.preventDefault();
+      await fetch('/logout', { method: 'POST' });
+      window.location.href = '/';
+    }
+
+    loadProfile();
+    loadRewards();
+  </script>
+</body>
+</html>
