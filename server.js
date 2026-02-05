@@ -32,6 +32,28 @@ const userSchema = new mongoose.Schema({
 
 const User = mongoose.model('User', userSchema);
 
+const Order = mongoose.model("Order", new mongoose.Schema({
+  total: Number,
+  createdAt: { type: Date, default: Date.now }
+}));
+
+const Inventory = mongoose.model("Inventory", new mongoose.Schema({
+  name: String,
+  category: String,
+  sold: Number
+}));
+
+const Reservation = mongoose.model("Reservation", new mongoose.Schema({
+  customerName: String,
+  time: String,
+  status: String
+}));
+
+const Traffic = mongoose.model("Traffic", new mongoose.Schema({
+  hour: String,
+  visitors: Number
+}));
+
 // Routes
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
@@ -47,6 +69,10 @@ app.get('/signin', (req, res) => {
 
 app.get('/userinfo', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'userinfo.html'));
+});
+
+app.get('/ownerhome', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'ownerhome.html'));
 });
 
 // Sign-up route
@@ -118,6 +144,47 @@ app.get("/api/user", async (req,res)=>{
   res.json(user);
 });
 
+app.get("/api/summary", async (req,res)=>{
+  const orders = await Order.find();
+  const revenue = orders.reduce((a,b)=>a+b.total,0);
+
+  const inventory = await Inventory.countDocuments();
+  const categories = await Inventory.distinct("category");
+  const reservations = await Reservation.find();
+
+  res.json({
+    todayRevenue: revenue,
+    footTraffic: 356,
+    totalInventory: inventory,
+    inventoryCategories: categories.length,
+    activeReservations: reservations.length,
+    pendingReservations: reservations.filter(r=>r.status==="pending").length
+  });
+});
+
+app.get("/api/weekly-revenue",(req,res)=>{
+  const days=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  res.json(days.map(d=>({day:d,revenue:Math.floor(Math.random()*6000)})));
+});
+
+app.get("/api/hourly-traffic", async(req,res)=>{
+  res.json(await Traffic.find());
+});
+
+app.get("/api/inventory", async(req,res)=>{
+  const data = await Inventory.aggregate([
+    {$group:{_id:"$category",count:{$sum:1}}}
+  ]);
+  res.json(data);
+});
+
+app.get("/api/top-products", async(req,res)=>{
+  res.json(await Inventory.find().sort({sold:-1}).limit(3));
+});
+
+app.get("/api/reservations", async(req,res)=>{
+  res.json(await Reservation.find());
+});
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

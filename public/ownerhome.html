@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Owner Analytics Dashboard</title>
+  <style>
+    :root {
+      --bg-color: #f8fafb;
+      --header-bg: #e9f7f2;
+      --accent-green: #00a676;
+      --text-dark: #333;
+      --card-bg: #ffffff;
+      --border-radius: 12px;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: var(--header-bg);
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #d0e7df;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+      color: var(--accent-green);
+    }
+
+    .sign-out {
+      text-decoration: none;
+      color: var(--accent-green);
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .dashboard-info {
+      text-align: right;
+    }
+
+    main {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+
+    section {
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: var(--border-radius);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      border: 1px solid #edf2f0;
+      transition: transform 0.2s;
+    }
+
+    section:hover {
+      transform: translateY(-5px);
+    }
+
+    h2 {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #777;
+      margin-top: 0;
+    }
+
+    .stat {
+      font-size: 2rem;
+      font-weight: bold;
+      margin: 10px 0;
+      color: var(--text-dark);
+    }
+
+    .change {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .positive {
+      color: var(--accent-green);
+    }
+
+    .negative {
+      color: #e53935;
+    }
+
+    .sub-text {
+      color: #888;
+      font-size: 0.85rem;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+    }
+
+    .list-card {
+      padding: 30px;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .view-all {
+      border: 2px solid var(--accent-green);
+      background: transparent;
+      color: var(--accent-green);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px;
+      border-radius: 14px;
+      background: #f3fff9;
+      border: 1px solid #d9f5e8;
+      margin-bottom: 16px;
+    }
+
+    .item-left {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: var(--accent-green);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .pill {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .pill.green {
+      background: #d1fae5;
+      color: #047857;
+    }
+
+    .pill.yellow {
+      background: #fff3bf;
+      color: #92400e;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .btn-confirm {
+      flex: 1;
+      background: var(--accent-green);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-decline {
+      flex: 1;
+      background: white;
+      border: 2px solid #e53935;
+      color: #e53935;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .stars {
+      color: #fbbf24;
+      font-size: 1.1rem;
+    }
+
+    .review-item {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .review-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .review-body {
+      margin-left: 60px;
+      margin-top: 8px;
+    }
+
+    .verified {
+      font-size: 0.75rem;
+      color: #6b7280;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div>
+      <h1>Owner Analytics</h1>
+      <p style="margin:0; font-size: 0.8rem; color: #666;">Real-time store performance</p>
+    </div>
+
+    <div class="dashboard-info">
+      <p id="dashboard-date" style="margin:0; font-weight: bold;"></p>
+      <a href="/signin" class="sign-out" onclick="logout(event)">← Sign Out</a>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Today's Revenue</h2>
+      <p class="stat">$5,420</p>
+      <p class="change positive">▲ +11.8%</p>
+      <p class="sub-text">vs $4,850 yesterday</p>
+    </section>
+
+    <section>
+      <h2>Foot Traffic</h2>
+      <p class="stat">356</p>
+      <p class="change negative">▼ -11.2%</p>
+      <p class="sub-text">Expected: 380–420</p>
+    </section>
+
+    <section>
+      <h2>Total Inventory</h2>
+      <p class="stat">1,279</p>
+      <p class="sub-text">Across 8 categories</p>
+      <div style="background:#eee; height:8px; border-radius:4px; margin-top:15px;">
+        <div style="background:var(--accent-green); width:65%; height:100%; border-radius:4px;"></div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Active Reservations</h2>
+      <p class="stat">4</p>
+      <p class="sub-text"><strong style="color:var(--accent-green)">1</strong> confirmed today</p>
+      <p class="sub-text"><strong>3</strong> pending</p>
+    </section>
+    <section class="full-width list-card">
+      <div class="list-header">
+        <div>
+          <h2>Top Selling Products</h2>
+          <p class="sub-text">Best performers this week</p>
+        </div>
+      </div>
+
+      <div class="list-item">
+        <div class="item-left">
+          <div class="avatar">D</div>
+          <div>
+            <strong>Designer Silk Dress</strong><br>
+            <span class="sub-text">45 sales · $6,750</span>
+          </div>
+        </div>
+        <span class="pill green">+12%</span>
+      </div>
+
+      <div class="list-item">
+        <div class="item-left">
+          <div class="avatar">L</div>
+          <div>
+            <strong>Leather Handbag</strong><br>
+            <span class="sub-text">38 sales · $5,320</span>
+          </div>
+        </div>
+        <span class="pill green">+8%</span>
+      </div>
+
+      <div class="list-item">
+        <div class="item-left">
+          <div class="avatar">S</div>
+          <div>
+            <strong>Sports Watch</strong><br>
+            <span class="sub-text">32 sales · $8,960</span>
+          </div>
+        </div>
+        <span class="pill green">+15%</span>
+      </div>
+    </section>
+    <section class="full-width list-card">
+      <div class="list-header">
+        <div>
+          <h2>Recent Reservations</h2>
+          <p class="sub-text">Customer try-on appointments</p>
+        </div>
+        <button class="view-all">View All</button>
+      </div>
+
+      <div class="list-item">
+        <div class="item-left">
+          <div class="avatar">S</div>
+          <div>
+            <strong>Sarah Johnson</strong><br>
+            <span class="sub-text">2 items · 2:00 PM – 4:00 PM</span>
+          </div>
+        </div>
+        <span class="pill yellow">Pending</span>
+      </div>
+      <div class="actions">
+        <button class="btn-confirm">✔ Confirm</button>
+        <button class="btn-decline">✖ Decline</button>
+      </div>
+
+      <div class="list-item">
+        <div class="item-left">
+          <div class="avatar">M</div>
+          <div>
+            <strong>Michael Chen</strong><br>
+            <span class="sub-text">3 items · 3:00 PM – 5:00 PM</span>
+          </div>
+        </div>
+        <span class="pill green">Confirmed</span>
+      </div>
+    </section>
+    <section class="full-width list-card">
+      <div class="list-header">
+        <div>
+          <h2>Customer Reviews</h2>
+          <p class="sub-text">Recent feedback from customers</p>
+        </div>
+        <button class="view-all">View All</button>
+      </div>
+
+      <div class="list-item review-item">
+        <div class="review-header">
+          <div class="item-left">
+            <div class="avatar">S</div>
+            <div>
+              <strong>Sarah Johnson</strong><br>
+              <span class="sub-text">Dec 8, 2025 · Summer Floral Dress</span>
+            </div>
+          </div>
+          <div class="stars">★★★★★</div>
+        </div>
+
+        <div class="review-body">
+          <p>
+            Amazing selection and the try-on service is so convenient! Staff was super
+            helpful and the store atmosphere was perfect.
+          </p>
+          <span class="verified">Verified Purchase</span>
+        </div>
+      </div>
+
+      <div class="list-item review-item">
+        <div class="review-header">
+          <div class="item-left">
+            <div class="avatar">E</div>
+            <div>
+              <strong>Emma Rodriguez</strong><br>
+              <span class="sub-text">Dec 6, 2025 · Casual Denim Jacket</span>
+            </div>
+          </div>
+          <div class="stars">★★★★☆</div>
+        </div>
+
+        <div class="review-body">
+          <p>
+            Love the concept! The loyalty points system is a nice touch.
+            Only wish there were more payment options.
+          </p>
+          <span class="verified">Verified Purchase</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Automatic showing date
+    (function updateDate() {
+      const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+      const today = new Date();
+      const formatted = `${months[today.getMonth()]} ${String(today.getDate()).padStart(2, "0")}, ${today.getFullYear()}`;
+      const target = document.getElementById("dashboard-date");
+      if (target) target.textContent = formatted;
+    })();
+
+    // Logout logic
+    async function logout(e) {
+      e.preventDefault();
+      try {
+        await fetch('/logout', { method: 'POST' });
+        window.location.href = '/signin';
+      } catch (error) {
+        window.location.href = '/signin';
+      }
+    }
+  </script>
+
+</body>
+
+</html>
