@@ -9,7 +9,6 @@ body {
   color: #102018;
 }
 
-
 .profileTopbar {
   height: 64px;
   display: flex;
@@ -44,13 +43,11 @@ body {
   font-size: 18px;
 }
 
-
 .page {
   max-width: 1200px;
   margin: 0 auto;
   padding: 22px;
 }
-
 
 .profileCard {
   background: #ffffff;
@@ -64,7 +61,6 @@ body {
   align-items: start;
 }
 
-
 .profileLeft {
   display: grid;
   grid-template-columns: 110px 1fr;
@@ -75,7 +71,7 @@ body {
   width: 96px;
   height: 96px;
   border-radius: 999px;
-  background: #0b7a58;              
+  background: #0b7a58;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -103,7 +99,6 @@ body {
   background: rgba(11, 122, 88, 0.14);
   margin: 8px 0 14px;
 }
-
 
 .profileMid {
   text-align: center;
@@ -141,7 +136,7 @@ body {
 
 .progressFill {
   height: 100%;
-  background: #0b7a58;              
+  background: #0b7a58;
   border-radius: 999px;
 }
 
@@ -171,7 +166,6 @@ body {
 .giftIcon {
   font-size: 16px;
 }
-
 
 .profileRight {
   text-align: center;
@@ -214,7 +208,6 @@ body {
   color: rgba(16, 32, 24, 0.55);
 }
 
-
 .sectionBlock {
   margin-top: 22px;
 }
@@ -224,6 +217,7 @@ body {
   align-items: center;
   justify-content: space-between;
   margin: 10px 0 12px;
+  gap: 12px;
 }
 
 .sectionTitle {
@@ -234,30 +228,100 @@ body {
   color: rgba(16, 32, 24, 0.85);
 }
 
-.sectionChevron {
-  color: rgba(16, 32, 24, 0.55);
-  font-size: 22px;
-}
-
 .sectionNote {
   margin-top: 10px;
   font-size: 12px;
   color: rgba(16, 32, 24, 0.55);
 }
 
-
-.tryOnGrid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 18px;
+/* ===== NEW: Search + Carousel header area ===== */
+.sectionHeaderRight {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
+.sectionSearchInput {
+  width: 240px;
+  max-width: 42vw;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(11, 122, 88, 0.22);
+  background: #ffffff;
+  font-size: 13px;
+}
+
+.sectionSearchInput:focus {
+  outline: none;
+  border-color: rgba(11, 122, 88, 0.55);
+}
+
+/* ===== NEW: Carousel ===== */
+.carousel {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.carouselTrack {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  padding-bottom: 6px;
+}
+
+.carouselItem {
+  flex: 0 0 auto;
+}
+
+/* optional visible scrollbar styling */
+.carouselTrack::-webkit-scrollbar {
+  height: 8px;
+}
+.carouselTrack::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.12);
+  border-radius: 999px;
+}
+.carouselTrack::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Carousel controls */
+.carouselControls {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.carBtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: rgba(0,0,0,0.04);
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.carBtn:hover {
+  background: rgba(0,0,0,0.08);
+}
+
+/* search hides items */
+.isHidden {
+  display: none !important;
+}
+
+/* Try-on cards */
 .tryCard {
   background: #ffffff;
   border-radius: 14px;
   border: 1px solid rgba(11, 122, 88, 0.25);
   padding: 14px;
   box-shadow: 0 10px 18px rgba(0, 0, 0, 0.05);
+  min-width: 260px;
 }
 
 .tryTop {
@@ -279,7 +343,7 @@ body {
   border-radius: 12px;
   margin: 12px 0;
   border: 1px solid rgba(0,0,0,0.08);
-  background: #e9ecef; 
+  background: #e9ecef;
 }
 
 .tryBottom {
@@ -287,14 +351,7 @@ body {
   color: rgba(16, 32, 24, 0.65);
 }
 
-
-.favouritesRow {
-  display: flex;
-  gap: 14px;
-  overflow-x: auto;
-  padding-bottom: 6px;
-}
-
+/* Fav cards */
 .favCard {
   min-width: 170px;
   background: #ffffff;
@@ -308,7 +365,7 @@ body {
   height: 120px;
   position: relative;
   border-bottom: 1px solid rgba(0,0,0,0.06);
-  background: #e9ecef; 
+  background: #e9ecef;
 }
 
 .favHeart {
@@ -338,7 +395,6 @@ body {
   font-size: 12px;
   color: rgba(16, 32, 24, 0.55);
 }
-
 
 .findStores {
   margin-top: 22px;
@@ -388,13 +444,8 @@ body {
   background: #095f45;
 }
 
-
 @media (max-width: 1000px) {
   .profileCard {
-    grid-template-columns: 1fr;
-  }
-
-  .tryOnGrid {
     grid-template-columns: 1fr;
   }
 
@@ -405,5 +456,21 @@ body {
   .findBtn {
     grid-column: 1 / -1;
     width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .sectionHeader {
+    align-items: flex-start;
+  }
+
+  .sectionHeaderRight {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .sectionSearchInput {
+    width: 100%;
+    max-width: 100%;
   }
 }
