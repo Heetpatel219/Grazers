@@ -21,11 +21,10 @@
     <!-- Main Profile Card -->
     <section class="profileCard">
 
-      <!-- Avatar + user info -->
+      <!-- Profile left -->
       <div class="profileLeft">
-        <div class="avatarCircle">
-          <div class="avatarIcon"></div>
-        </div>
+        <!-- Simple circle only (no avatar icon) -->
+        <div class="avatarCircle"></div>
 
         <div class="infoBlock">
           <div class="infoLabel">Name</div>
@@ -67,113 +66,144 @@
         </div>
         <div class="barcodeHint">Scan at checkout for loyalty points</div>
       </div>
+
     </section>
 
-    <!-- Saved for Try-On -->
-    <section class="sectionBlock">
+    <!-- Saved for Try-On (Carousel + Search) -->
+    <section class="sectionBlock" id="tryOnSection">
       <div class="sectionHeader">
         <div class="sectionTitle">
           <span class="bookmarkIcon">🔖</span>
           Saved for Try-On
         </div>
-        <div class="sectionChevron">›</div>
+
+        <div class="sectionHeaderRight">
+          <input
+            id="tryOnSearch"
+            class="sectionSearchInput"
+            type="text"
+            placeholder="Search try-on stores..."
+            autocomplete="off"
+          />
+
+          <div class="carouselControls">
+            <button class="carBtn" id="tryOnPrev" type="button">‹</button>
+            <button class="carBtn" id="tryOnNext" type="button">›</button>
+          </div>
+        </div>
       </div>
 
-      <div class="tryOnGrid">
-        <div class="tryCard">
-          <div class="tryTop">
-            <div class="tryStore">Fashion Plaza</div>
-            <div class="tryTime">Dec 5, 2025 at 2:00 PM</div>
+      <div class="carousel">
+        <div class="carouselTrack" id="tryOnTrack">
+
+          <div class="tryCard carouselItem" data-search="fashion plaza dec 5 2025 2:00 pm">
+            <div class="tryTop">
+              <div class="tryStore">Fashion Plaza</div>
+              <div class="tryTime">Dec 5, 2025 at 2:00 PM</div>
+            </div>
+            <div class="tryImg"></div>
+            <div class="tryBottom">3 items reserved</div>
           </div>
 
-          <div class="tryImg imgRack"></div>
-
-          <div class="tryBottom">3 items reserved</div>
-        </div>
-
-        <div class="tryCard">
-          <div class="tryTop">
-            <div class="tryStore">Shoe Haven</div>
-            <div class="tryTime">Dec 6, 2025 at 11:00 AM</div>
+          <div class="tryCard carouselItem" data-search="shoe haven dec 6 2025 11:00 am">
+            <div class="tryTop">
+              <div class="tryStore">Shoe Haven</div>
+              <div class="tryTime">Dec 6, 2025 at 11:00 AM</div>
+            </div>
+            <div class="tryImg"></div>
+            <div class="tryBottom">2 items reserved</div>
           </div>
 
-          <div class="tryImg imgShoes"></div>
-
-          <div class="tryBottom">2 items reserved</div>
-        </div>
-
-        <div class="tryCard">
-          <div class="tryTop">
-            <div class="tryStore">Style Central</div>
-            <div class="tryTime">Dec 7, 2025 at 4:30 PM</div>
+          <div class="tryCard carouselItem" data-search="style central dec 7 2025 4:30 pm">
+            <div class="tryTop">
+              <div class="tryStore">Style Central</div>
+              <div class="tryTime">Dec 7, 2025 at 4:30 PM</div>
+            </div>
+            <div class="tryImg"></div>
+            <div class="tryBottom">1 item reserved</div>
           </div>
 
-          <div class="tryImg imgDress"></div>
-
-          <div class="tryBottom">1 item reserved</div>
         </div>
       </div>
 
       <div class="sectionNote">Items reserved for try-on at local stores</div>
     </section>
 
-    <!-- Favourites -->
-    <section class="sectionBlock">
+    <!-- Favourites (Carousel + Search) -->
+    <section class="sectionBlock" id="favoritesSection">
       <div class="sectionHeader">
         <div class="sectionTitle">
           <span class="heartOutline">♡</span>
           Favourites
         </div>
-        <div class="sectionChevron">›</div>
+
+        <div class="sectionHeaderRight">
+          <input
+            id="favoritesSearch"
+            class="sectionSearchInput"
+            type="text"
+            placeholder="Search favourites..."
+            autocomplete="off"
+          />
+
+          <div class="carouselControls">
+            <button class="carBtn" id="favPrev" type="button">‹</button>
+            <button class="carBtn" id="favNext" type="button">›</button>
+          </div>
+        </div>
       </div>
 
-      <div class="favouritesRow">
-        <div class="favCard">
-          <div class="favImg imgSunglasses">
-            <div class="favHeart">❤</div>
-          </div>
-          <div class="favName">Sunglasses</div>
-          <div class="favStore">Optic World</div>
-        </div>
+      <div class="carousel">
+        <div class="carouselTrack" id="favoritesTrack">
 
-        <div class="favCard">
-          <div class="favImg imgWatch">
-            <div class="favHeart">❤</div>
+          <div class="favCard carouselItem" data-search="sunglasses optic world">
+            <div class="favImg">
+              <div class="favHeart">❤</div>
+            </div>
+            <div class="favName">Sunglasses</div>
+            <div class="favStore">Optic World</div>
           </div>
-          <div class="favName">Luxury Watch</div>
-          <div class="favStore">Time Gallery</div>
-        </div>
 
-        <div class="favCard">
-          <div class="favImg imgShirt">
-            <div class="favHeart">❤</div>
+          <div class="favCard carouselItem" data-search="luxury watch time gallery">
+            <div class="favImg">
+              <div class="favHeart">❤</div>
+            </div>
+            <div class="favName">Luxury Watch</div>
+            <div class="favStore">Time Gallery</div>
           </div>
-          <div class="favName">Casual Shirt</div>
-          <div class="favStore">Fashion Plaza</div>
-        </div>
 
-        <div class="favCard">
-          <div class="favImg imgRunningShoes">
-            <div class="favHeart">❤</div>
+          <div class="favCard carouselItem" data-search="casual shirt fashion plaza">
+            <div class="favImg">
+              <div class="favHeart">❤</div>
+            </div>
+            <div class="favName">Casual Shirt</div>
+            <div class="favStore">Fashion Plaza</div>
           </div>
-          <div class="favName">Running Shoes</div>
-          <div class="favStore">Sports Elite</div>
-        </div>
 
-        <div class="favCard">
-          <div class="favImg imgFormal">
-            <div class="favHeart">❤</div>
+          <div class="favCard carouselItem" data-search="running shoes sports elite">
+            <div class="favImg">
+              <div class="favHeart">❤</div>
+            </div>
+            <div class="favName">Running Shoes</div>
+            <div class="favStore">Sports Elite</div>
           </div>
-          <div class="favName">Formal Dress</div>
-          <div class="favStore">Gala Collection</div>
-        </div>
 
-        <div class="favCard">
-          <div class="favImg imgJewelrySet">
-            <div class="favHeart">❤</div>
+          <div class="favCard carouselItem" data-search="formal dress gala collection">
+            <div class="favImg">
+              <div class="favHeart">❤</div>
+            </div>
+            <div class="favName">Formal Dress</div>
+            <div class="favStore">Gala Collection</div>
           </div>
-          <div class="favName">Jewelry Set</div>
-          <div class="favStore">Gem Palace</div>
+
+          <div class="favCard carouselItem" data-search="jewelry set gem palace">
+            <div class="favImg">
+              <div class="favHeart">❤</div>
+            </div>
+            <div class="favName">Jewelry Set</div>
+            <div class="favStore">Gem Palace</div>
+          </div>
+
         </div>
       </div>
 
@@ -197,6 +227,58 @@
     </section>
 
   </main>
+
+  <script>
+    function setupCarouselSearch({ trackId, inputId, prevId, nextId }) {
+      const track = document.getElementById(trackId);
+      const input = document.getElementById(inputId);
+      const prev = document.getElementById(prevId);
+      const next = document.getElementById(nextId);
+
+      if (!track || !input || !prev || !next) return;
+
+      function getScrollAmount() {
+        const firstVisible = Array.from(track.children).find(el => !el.classList.contains('isHidden'));
+        if (!firstVisible) return 250;
+        const gap = 14;
+        return firstVisible.getBoundingClientRect().width + gap;
+      }
+
+      prev.addEventListener('click', () => {
+        track.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+      });
+
+      next.addEventListener('click', () => {
+        track.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+      });
+
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+
+        Array.from(track.children).forEach(card => {
+          const hay = (card.getAttribute('data-search') || '').toLowerCase();
+          const match = hay.includes(q);
+          card.classList.toggle('isHidden', q.length > 0 && !match);
+        });
+
+        track.scrollTo({ left: 0, behavior: 'smooth' });
+      });
+    }
+
+    setupCarouselSearch({
+      trackId: 'tryOnTrack',
+      inputId: 'tryOnSearch',
+      prevId: 'tryOnPrev',
+      nextId: 'tryOnNext'
+    });
+
+    setupCarouselSearch({
+      trackId: 'favoritesTrack',
+      inputId: 'favoritesSearch',
+      prevId: 'favPrev',
+      nextId: 'favNext'
+    });
+  </script>
 
 </body>
 </html>
