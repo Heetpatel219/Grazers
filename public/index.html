@@ -161,15 +161,19 @@
       const favIcon = isFav ? '♥' : '♡';
       return `
         <div class="productCard" data-product-id="${id}">
-          <div class="productCardImg">
-            <button type="button" class="${favClass}" data-product-id="${id}" title="${isFav ? 'Remove from favourites' : 'Add to favourites'}" aria-label="Favorite">${favIcon}</button>
-            <img src="${img}" alt="${title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect fill=%22%23eee%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>No image</text></svg>'">
-            <span class="productBadge ${item.is_featured ? 'badgePink' : (item.is_best_seller ? 'badgePurple' : 'badgeBlue')}">${cat}</span>
+          <div class="productCardClickable" data-product-id="${id}">
+            <div class="productCardImg">
+              <button type="button" class="${favClass}" data-product-id="${id}" title="${isFav ? 'Remove from favourites' : 'Add to favourites'}" aria-label="Favorite">${favIcon}</button>
+              <img src="${img}" alt="${title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect fill=%22%23eee%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>No image</text></svg>'">
+              <span class="productBadge ${item.is_featured ? 'badgePink' : (item.is_best_seller ? 'badgePurple' : 'badgeBlue')}">${cat}</span>
+            </div>
+            <div class="productCardBody">
+              <h3>${title}</h3>
+              ${store ? `<p class="productStore">${store}</p>` : ''}
+              <p class="productPrice">$${price}</p>
+            </div>
           </div>
-          <div class="productCardBody">
-            <h3>${title}</h3>
-            ${store ? `<p class="productStore">${store}</p>` : ''}
-            <p class="productPrice">$${price}</p>
+          <div class="productCardActions">
             <button type="button" class="productBtn reserveBtn" data-price="${item.price}" data-product-id="${id}">Reserve</button>
           </div>
         </div>
@@ -305,29 +309,45 @@
       }
     });
 
-    // Reserving an item earns loyalty points (1 point per $1, rounded down)
+    // Reserve an item via centralized reservation API (also updates loyalty points)
     document.addEventListener('click', async function(e) {
       const btn = e.target.closest('.reserveBtn');
       if (!btn) return;
-      const price = parseFloat(btn.dataset.price);
       const productId = btn.dataset.productId;
-      if (!Number.isFinite(price) || price <= 0) return;
+      const price = parseFloat(btn.dataset.price);
       try {
-        const res = await fetch('/api/loyalty/earn', {
+        const res = await fetch('/api/reservations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: price })
+          body: JSON.stringify({ productId, quantity: 1 })
         });
         if (res.status === 401) {
           alert('Please sign in to reserve and earn points.');
           return;
         }
-        if (res.ok) {
-          const data = await res.json();
-          alert('Reserved! You earned ' + Math.floor(price) + ' loyalty points. Total: ' + data.points + ' pts.');
+        const data = await res.json();
+        if (!res.ok) {
+          if (typeof data.inventoryLeft === 'number' && data.inventoryLeft === 0) {
+            btn.disabled = true;
+            btn.textContent = 'Out of stock';
+          }
+          alert(data.error || 'Could not reserve this item.');
+          return;
+        }
+        if (typeof data.inventoryLeft === 'number' && data.inventoryLeft === 0) {
+          btn.disabled = true;
+          btn.textContent = 'Out of stock';
+        }
+        if (typeof data.loyaltyPoints === 'number') {
+          alert('Reserved! Your loyalty balance is now ' + data.loyaltyPoints + ' pts.');
+        } else if (Number.isFinite(price)) {
+          alert('Reserved! You earned ' + Math.floor(price) + ' loyalty points.');
+        } else {
+          alert('Reserved!');
         }
       } catch (err) {
         console.error('Reserve error:', err);
+        alert('Error while reserving item.');
       }
     });
 
@@ -346,6 +366,19 @@
         loadProducts(q);
         if (q) window.history.replaceState({}, '', '?q=' + encodeURIComponent(q) + (window.location.hash || ''));
       }, 400);
+    });
+
+    // Click through to product detail page when clicking on card (excluding buttons)
+    document.addEventListener('click', function(e) {
+      const clickable = e.target.closest('.productCardClickable');
+      if (!clickable) return;
+      const favBtn = e.target.closest('.productFavBtn');
+      const reserveBtn = e.target.closest('.reserveBtn');
+      if (favBtn || reserveBtn) return;
+      const id = clickable.dataset.productId;
+      if (id) {
+        window.location.href = '/product.html?id=' + encodeURIComponent(id);
+      }
     });
 
     // Logout helper used by header link
