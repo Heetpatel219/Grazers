@@ -338,13 +338,7 @@
           btn.disabled = true;
           btn.textContent = 'Out of stock';
         }
-        if (typeof data.loyaltyPoints === 'number') {
-          alert('Reserved! Your loyalty balance is now ' + data.loyaltyPoints + ' pts.');
-        } else if (Number.isFinite(price)) {
-          alert('Reserved! You earned ' + Math.floor(price) + ' loyalty points.');
-        } else {
-          alert('Reserved!');
-        }
+        alert('Reserved! You will earn loyalty points when the store confirms your purchase.');
       } catch (err) {
         console.error('Reserve error:', err);
         alert('Error while reserving item.');

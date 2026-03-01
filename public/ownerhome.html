@@ -229,6 +229,71 @@
       color: #6b7280;
       font-weight: 600;
     }
+
+    .chart-period-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .period-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .period-btn:hover, .period-btn.active {
+      background: var(--accent-green);
+      color: white;
+      border-color: var(--accent-green);
+    }
+    .revenue-chart {
+      min-height: 200px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 20px 0;
+    }
+    .revenue-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+    }
+    .revenue-bar {
+      width: 100%;
+      max-width: 40px;
+      min-height: 4px;
+      background: var(--accent-green);
+      border-radius: 6px 6px 0 0;
+      transition: height 0.2s;
+    }
+    .revenue-bar-label {
+      font-size: 0.7rem;
+      color: #6b7280;
+      margin-top: 6px;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .btn-confirm-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+      background: var(--accent-green);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-confirm-sm:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
@@ -248,9 +313,9 @@
 
   <main>
     <section>
-      <h2>Today's Revenue (approx.)</h2>
+      <h2>Today's Gross Revenue</h2>
       <p id="today-revenue" class="stat">$0</p>
-      <p class="sub-text">Based on confirmed reservations</p>
+      <p class="sub-text">From confirmed purchases</p>
     </section>
 
     <section>
@@ -273,6 +338,26 @@
       <p id="active-reservations" class="stat">0</p>
       <p class="sub-text"><strong id="confirmed-today" style="color:var(--accent-green)">0</strong> confirmed today</p>
       <p class="sub-text"><strong id="reservations-total">0</strong> total reservations</p>
+    </section>
+
+    <section>
+      <h2>Daily Expected Foot Traffic</h2>
+      <p id="expected-foot-traffic" class="stat">0</p>
+      <p class="sub-text">Visits scheduled for today</p>
+    </section>
+    <section class="full-width list-card">
+      <div class="list-header">
+        <div>
+          <h2>Gross Revenue</h2>
+          <p class="sub-text">Revenue from confirmed purchases</p>
+        </div>
+        <div class="chart-period-btns">
+          <button type="button" class="period-btn active" data-period="week">Week</button>
+          <button type="button" class="period-btn" data-period="month">Month</button>
+          <button type="button" class="period-btn" data-period="year">Year</button>
+        </div>
+      </div>
+      <div id="revenue-chart" class="revenue-chart"></div>
     </section>
     <section class="full-width list-card">
       <div class="list-header">
@@ -371,11 +456,7 @@
         const confirmedToday = document.getElementById('confirmed-today');
         const reservationsTotal = document.getElementById('reservations-total');
 
-        const approxRevenue = (data.topProducts || []).reduce((sum, p) => {
-          return sum + (p.reservedQty || 0) * 50;
-        }, 0);
-
-        todayRevenue.textContent = '$' + approxRevenue.toFixed(0);
+        todayRevenue.textContent = '$' + (data.grossRevenueToday || 0).toFixed(0);
         footTraffic.textContent = data.reservationCount || 0;
         totalInventory.textContent = data.totalInventory || 0;
         const catNames = Object.keys(data.inventoryByCategory || {});
@@ -384,6 +465,8 @@
         activeReservations.textContent = data.activeReservations || 0;
         confirmedToday.textContent = data.confirmedToday || 0;
         reservationsTotal.textContent = data.reservationCount || 0;
+        const expectedFoot = document.getElementById('expected-foot-traffic');
+        if (expectedFoot) expectedFoot.textContent = data.expectedFootTrafficToday ?? 0;
 
         const topWrap = document.getElementById('top-products');
         topWrap.innerHTML = '';
@@ -435,28 +518,98 @@
         const resListRes = await fetch('/api/owner/reservations?storeName=' + encodeURIComponent(storeName));
         if (resListRes.ok) {
           const reservations = await resListRes.json();
-          reservations.slice(0, 5).forEach(r => {
+          reservations.slice(0, 10).forEach(r => {
             const div = document.createElement('div');
             div.className = 'list-item';
+            const isPending = r.status === 'pending';
+            const visitWhen = r.preferredDate || r.preferredTime
+              ? (formatDate(r.preferredDate) || '') + (r.preferredTime ? ' at ' + r.preferredTime : '')
+              : '—';
             div.innerHTML = `
               <div class="item-left">
                 <div class="avatar">${(r.userName || 'C').charAt(0).toUpperCase()}</div>
                 <div>
                   <strong>${r.userName || 'Customer'}</strong><br>
-                  <span class="sub-text">${r.quantity || 1} item(s) · ${formatDate(r.createdAt)}</span>
+                  <span class="sub-text">${r.productTitle || 'Item'} · ${r.quantity || 1} qty</span><br>
+                  <span class="sub-text">Visit: ${visitWhen}</span>
                 </div>
               </div>
-              <span class="pill ${r.status === 'confirmed' ? 'green' : 'yellow'}">${(r.status || 'pending').toUpperCase()}</span>
+              <div style="display:flex; align-items:center; gap:10px;">
+                ${isPending ? `<button type="button" class="btn-confirm-sm" data-confirm-reservation data-id="${r._id}">Confirm</button>` : ''}
+                <span class="pill ${r.status === 'confirmed' ? 'green' : 'yellow'}">${(r.status || 'pending').toUpperCase()}</span>
+              </div>
             `;
             recentWrap.appendChild(div);
           });
         }
+
+        loadRevenueChart(storeName, document.querySelector('.period-btn.active')?.dataset.period || 'week');
       } catch (e) {
         console.error('Load analytics error:', e);
       }
     }
 
+    async function loadRevenueChart(storeName, period) {
+      try {
+        const res = await fetch('/api/owner/revenue?storeName=' + encodeURIComponent(storeName) + '&period=' + (period || 'week'));
+        if (!res.ok) return;
+        const { data } = await res.json();
+        const chartEl = document.getElementById('revenue-chart');
+        if (!chartEl) return;
+        chartEl.innerHTML = '';
+        if (!data || data.length === 0) {
+          chartEl.innerHTML = '<p class="sub-text" style="padding:20px;">No revenue data yet. Confirm reservations to see gross revenue.</p>';
+          return;
+        }
+        const maxRev = Math.max(...data.map(d => d.revenue), 1);
+        data.forEach(d => {
+          const wrap = document.createElement('div');
+          wrap.className = 'revenue-bar-wrap';
+          const pct = maxRev > 0 ? (d.revenue / maxRev) * 100 : 0;
+          wrap.innerHTML = `
+            <div class="revenue-bar" style="height:${Math.max(pct, 2)}%"></div>
+            <div class="revenue-bar-label">${d.label}</div>
+          `;
+          wrap.title = '$' + d.revenue.toFixed(0);
+          chartEl.appendChild(wrap);
+        });
+      } catch (err) {
+        console.error('Load revenue chart error:', err);
+      }
+    }
+
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const storeSelect = document.getElementById('storeSelect');
+        if (storeSelect) loadRevenueChart(storeSelect.value, this.dataset.period);
+      });
+    });
+
     document.addEventListener('click', async function(e) {
+      const confirmBtn = e.target.closest('[data-confirm-reservation]');
+      if (confirmBtn) {
+        e.preventDefault();
+        const id = confirmBtn.getAttribute('data-id');
+        if (!id) return;
+        confirmBtn.disabled = true;
+        try {
+          const res = await fetch('/api/owner/reservations/' + id + '/confirm', { method: 'POST' });
+          if (res.ok) {
+            const select = document.getElementById('storeSelect');
+            if (select) loadAnalytics(select.value);
+          } else {
+            const err = await res.json().catch(() => ({}));
+            alert(err.error || 'Could not confirm reservation.');
+            confirmBtn.disabled = false;
+          }
+        } catch (err) {
+          console.error('Confirm error:', err);
+          confirmBtn.disabled = false;
+        }
+        return;
+      }
       const btn = e.target.closest('[data-reply-btn]');
       if (!btn) return;
       const reviewId = btn.getAttribute('data-review-id');

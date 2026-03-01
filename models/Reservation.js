@@ -8,8 +8,12 @@ const reservationSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
   userName: { type: String, required: true },
   quantity: { type: Number, default: 1, min: 1 },
+  priceAtReservation: { type: Number, default: 0 }, // for revenue when confirmed
   status: { type: String, enum: ['pending', 'confirmed', 'cancelled'], default: 'pending' },
-  createdAt: { type: Date, default: Date.now }
+  preferredDate: { type: Date }, // date customer wants to visit store
+  preferredTime: { type: String }, // e.g. "14:00" or "2:00 PM"
+  createdAt: { type: Date, default: Date.now },
+  confirmedAt: { type: Date } // when owner confirms = purchase
 });
 
 const Reservation = mongoose.model('Reservation', reservationSchema);

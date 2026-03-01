@@ -147,17 +147,21 @@
       color: #047857;
     }
     .related-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      display: flex;
       gap: 14px;
       margin-top: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scroll-snap-type: x mandatory;
     }
     .related-card {
+      flex: 0 0 180px;
       padding: 10px;
       border-radius: 10px;
       border: 1px solid #e5e7eb;
       background: #fff;
       cursor: pointer;
+      scroll-snap-align: start;
     }
     .related-card-title {
       font-size: 0.9rem;
@@ -214,13 +218,84 @@
       font-size: 0.9rem;
       font-family: inherit;
     }
-    .review-form select {
-      padding: 6px 8px;
-      border-radius: 999px;
-      border: 1px solid #e5e7eb;
-      font-size: 0.9rem;
-      width: 120px;
+    .star-rating {
+      display: flex;
+      gap: 4px;
+      font-size: 1.5rem;
+      cursor: pointer;
+      margin-bottom: 8px;
     }
+    .star-rating .star {
+      color: #d1d5db;
+      transition: color 0.15s;
+    }
+    .star-rating .star.filled {
+      color: #fbbf24;
+    }
+    .star-rating:hover .star {
+      color: #fbbf24;
+    }
+    .star-rating .star:hover ~ .star {
+      color: #d1d5db;
+    }
+    .related-card-img {
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #f3f4f6;
+      margin-bottom: 8px;
+    }
+    .reserve-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+    }
+    .reserve-modal-overlay.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .reserve-modal {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 360px;
+      width: 90%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+    }
+    .reserve-modal h3 { margin: 0 0 16px; font-size: 1.2rem; }
+    .reserve-modal label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
+    .reserve-modal input, .reserve-modal select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+      box-sizing: border-box;
+    }
+    .reserve-modal-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .reserve-modal-actions button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; }
+    .reserve-modal-actions .btn-cancel { background: #f3f4f6; color: #374151; }
+    .reserve-modal-actions .btn-submit { background: linear-gradient(135deg, #ec4899, #6366f1); color: #fff; }
+    .reservation-status-section { margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
+    .reservation-status-section h3 { margin: 0 0 10px; font-size: 1rem; }
+    .reservation-status-list { display: flex; flex-direction: column; gap: 10px; }
+    .reservation-status-item {
+      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
+      padding: 10px 12px; background: #fff; border-radius: 10px; border: 1px solid #e5e7eb;
+    }
+    .reservation-status-item .status-badge { padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
+    .reservation-status-item .status-badge.pending { background: #fef3c7; color: #92400e; }
+    .reservation-status-item .status-badge.confirmed { background: #d1fae5; color: #047857; }
+    .reservation-status-item .status-badge.cancelled { background: #fee2e2; color: #b91c1c; }
   </style>
 </head>
 <body>
@@ -255,6 +330,12 @@
           <button type="button" id="reserveBtnDetail" class="btn-primary">Reserve for try-on</button>
           <button type="button" id="favoriteBtnDetail" class="btn-secondary">♡ Favourite</button>
         </div>
+        <div class="detail-section reservation-status-section" id="reservationStatusSection" style="display: none;">
+          <h3>Your reservation status</h3>
+          <p class="sub-text" style="margin:0 0 10px; font-size:0.85rem;">Real-time status from the store</p>
+          <div id="reservationStatusList" class="reservation-status-list"></div>
+          <button type="button" id="refreshReservationStatus" class="btn-secondary" style="margin-top:10px; font-size:0.85rem;">Refresh status</button>
+        </div>
         <div class="detail-section">
           <h2>Product Description</h2>
           <p id="productDescription"></p>
@@ -271,16 +352,14 @@
         <h3>Product Reviews</h3>
         <div id="productReviews" class="reviews-list"></div>
         <form id="productReviewForm" class="review-form">
-          <label>
-            Rating
-            <select id="productReviewRating">
-              <option value="5">5 ★</option>
-              <option value="4">4 ★</option>
-              <option value="3">3 ★</option>
-              <option value="2">2 ★</option>
-              <option value="1">1 ★</option>
-            </select>
-          </label>
+          <label>Rating</label>
+          <div class="star-rating" id="productReviewStars" data-rating="0">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+          </div>
           <textarea id="productReviewComment" placeholder="Share your thoughts about this product…"></textarea>
           <button type="submit" class="btn-primary" style="width:auto; align-self:flex-start; padding-inline:16px; font-size:0.9rem;">Submit review</button>
         </form>
@@ -290,22 +369,45 @@
         <h3>Store Reviews</h3>
         <div id="storeReviews" class="reviews-list"></div>
         <form id="storeReviewForm" class="review-form">
-          <label>
-            Rating
-            <select id="storeReviewRating">
-              <option value="5">5 ★</option>
-              <option value="4">4 ★</option>
-              <option value="3">3 ★</option>
-              <option value="2">2 ★</option>
-              <option value="1">1 ★</option>
-            </select>
-          </label>
+          <label>Rating</label>
+          <div class="star-rating" id="storeReviewStars" data-rating="0">
+            <span class="star" data-value="1">★</span>
+            <span class="star" data-value="2">★</span>
+            <span class="star" data-value="3">★</span>
+            <span class="star" data-value="4">★</span>
+            <span class="star" data-value="5">★</span>
+          </div>
           <textarea id="storeReviewComment" placeholder="How was your experience with this store?"></textarea>
-          <button type="submit" class="btn-secondary" style="width:auto; align-self:flex-start; padding-inline:16px; font-size:0.9rem;">Submit store review</button>
+          <button type="submit" class="btn-primary" style="width:auto; align-self:flex-start; padding-inline:16px; font-size:0.9rem;">Submit store review</button>
         </form>
       </div>
     </aside>
   </main>
+
+  <div class="reserve-modal-overlay" id="reserveModal">
+    <div class="reserve-modal">
+      <h3>Choose visit date & time</h3>
+      <label for="reserveDate">Date</label>
+      <input type="date" id="reserveDate" min="">
+      <label for="reserveTime">Time</label>
+      <select id="reserveTime">
+        <option value="9:00 AM">9:00 AM</option>
+        <option value="10:00 AM">10:00 AM</option>
+        <option value="11:00 AM">11:00 AM</option>
+        <option value="12:00 PM">12:00 PM</option>
+        <option value="1:00 PM">1:00 PM</option>
+        <option value="2:00 PM">2:00 PM</option>
+        <option value="3:00 PM">3:00 PM</option>
+        <option value="4:00 PM">4:00 PM</option>
+        <option value="5:00 PM">5:00 PM</option>
+        <option value="6:00 PM">6:00 PM</option>
+      </select>
+      <div class="reserve-modal-actions">
+        <button type="button" class="btn-cancel" id="reserveModalCancel">Cancel</button>
+        <button type="button" class="btn-submit" id="reserveModalSubmit">Reserve</button>
+      </div>
+    </div>
+  </div>
 
   <script>
     let currentProductId = null;
@@ -484,10 +586,13 @@
         const relWrap = document.getElementById('relatedProducts');
         relWrap.innerHTML = '';
         if (relatedProducts && relatedProducts.length) {
+          const placeholderImg = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect fill=%22%23eee%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>No image</text></svg>';
           relatedProducts.forEach(item => {
             const card = document.createElement('div');
             card.className = 'related-card';
+            const imgSrc = item.images || placeholderImg;
             card.innerHTML = `
+              <img class="related-card-img" src="${imgSrc}" alt="${item.title || 'Product'}" onerror="this.src='${placeholderImg}'">
               <div class="related-card-title">${item.title || 'Product'}</div>
               <div class="related-card-price">$${(typeof item.price === 'number' ? item.price.toFixed(2) : (item.price || '0.00'))}</div>
               <div style="font-size:0.8rem; color:#6b7280;">${item.store_name || ''}</div>
@@ -503,24 +608,51 @@
 
         document.getElementById('storeReviewForm').dataset.storeId = product.store_id || '';
         document.getElementById('storeReviewForm').dataset.storeName = product.store_name || '';
+
+        loadReservationStatus();
       } catch (err) {
         console.error('Load product error:', err);
         alert('Could not load product.');
       }
     }
 
+    function openReserveModal() {
+      const today = new Date().toISOString().slice(0, 10);
+      document.getElementById('reserveDate').setAttribute('min', today);
+      document.getElementById('reserveModal').classList.add('open');
+    }
+    function closeReserveModal() {
+      document.getElementById('reserveModal').classList.remove('open');
+    }
+
     async function reserveFromDetail() {
       const btn = document.getElementById('reserveBtnDetail');
+      if (btn.disabled) return;
       const productId = btn.dataset.productId;
       if (!productId) return;
+      openReserveModal();
+    }
+
+    async function submitReserveWithDateTime() {
+      const btn = document.getElementById('reserveBtnDetail');
+      const productId = btn.dataset.productId;
+      const dateEl = document.getElementById('reserveDate');
+      const timeEl = document.getElementById('reserveTime');
+      const preferredDate = dateEl.value;
+      const preferredTime = timeEl.value;
+      if (!preferredDate) {
+        alert('Please choose a date to visit the store.');
+        return;
+      }
+      closeReserveModal();
       try {
         const res = await fetch('/api/reservations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId, quantity: 1 })
+          body: JSON.stringify({ productId, quantity: 1, preferredDate, preferredTime })
         });
         if (res.status === 401) {
-          alert('Please sign in to reserve and earn points.');
+          alert('Please sign in to reserve.');
           return;
         }
         const data = await res.json();
@@ -549,21 +681,86 @@
             invEl.className = 'inventory';
           }
         }
-        if (typeof data.loyaltyPoints === 'number') {
-          alert('Reserved! Your loyalty balance is now ' + data.loyaltyPoints + ' pts.');
-        } else {
-          alert('Reserved!');
-        }
+        alert('Reserved! You will earn loyalty points when the store confirms your purchase. Check "Your reservation status" for updates.');
+        loadReservationStatus();
       } catch (err) {
         console.error('Reserve error:', err);
         alert('Error while reserving.');
       }
     }
 
+    async function loadReservationStatus() {
+      const section = document.getElementById('reservationStatusSection');
+      const list = document.getElementById('reservationStatusList');
+      if (!section || !list) return;
+      try {
+        const res = await fetch('/api/my-reservations');
+        if (res.status === 401) {
+          section.style.display = 'none';
+          return;
+        }
+        const reservations = await res.json();
+        const forThisProduct = currentProductId
+          ? reservations.filter(r => String(r.productId) === String(currentProductId))
+          : reservations;
+        if (forThisProduct.length === 0) {
+          section.style.display = 'none';
+          return;
+        }
+        section.style.display = 'block';
+        list.innerHTML = forThisProduct.map(r => {
+          const d = r.preferredDate ? formatDate(r.preferredDate) : '—';
+          const t = r.preferredTime || '—';
+          const status = (r.status || 'pending').toLowerCase();
+          return `
+            <div class="reservation-status-item">
+              <div>
+                <strong>${r.productTitle || 'Item'}</strong> · ${r.store_name || 'Store'}<br>
+                <span class="sub-text">Visit: ${d} at ${t}</span>
+              </div>
+              <span class="status-badge ${status}">${(r.status || 'pending').toUpperCase()}</span>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        section.style.display = 'none';
+      }
+    }
+
+    function setupStarRating(containerId) {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+      const stars = container.querySelectorAll('.star');
+      const updateDisplay = (val) => {
+        stars.forEach((s, i) => s.classList.toggle('filled', i < val));
+      };
+      stars.forEach(star => {
+        star.addEventListener('click', (e) => {
+          e.preventDefault();
+          const val = Number(star.getAttribute('data-value'));
+          container.dataset.rating = val;
+          updateDisplay(val);
+        });
+        star.addEventListener('mouseenter', () => updateDisplay(Number(star.getAttribute('data-value'))));
+      });
+      container.addEventListener('mouseleave', () => updateDisplay(Number(container.dataset.rating || 0)));
+    }
+
+    function getProductReviewRating() {
+      return Number(document.getElementById('productReviewStars').dataset.rating || 0);
+    }
+    function getStoreReviewRating() {
+      return Number(document.getElementById('storeReviewStars').dataset.rating || 0);
+    }
+
     async function submitProductReview(e) {
       e.preventDefault();
       if (!currentProductId) return;
-      const rating = Number(document.getElementById('productReviewRating').value);
+      const rating = getProductReviewRating();
+      if (!rating || rating < 1) {
+        alert('Please select a rating by clicking the stars.');
+        return;
+      }
       const comment = document.getElementById('productReviewComment').value.trim();
       try {
         const res = await fetch('/api/products/' + encodeURIComponent(currentProductId) + '/reviews', {
@@ -581,6 +778,8 @@
           return;
         }
         document.getElementById('productReviewComment').value = '';
+        document.getElementById('productReviewStars').dataset.rating = '0';
+        document.getElementById('productReviewStars').querySelectorAll('.star').forEach(s => s.classList.remove('filled'));
         loadProductDetail();
       } catch (err) {
         console.error('Submit product review error:', err);
@@ -596,7 +795,11 @@
         alert('Store information missing.');
         return;
       }
-      const rating = Number(document.getElementById('storeReviewRating').value);
+      const rating = getStoreReviewRating();
+      if (!rating || rating < 1) {
+        alert('Please select a rating by clicking the stars.');
+        return;
+      }
       const comment = document.getElementById('storeReviewComment').value.trim();
       try {
         const url = storeId ? '/api/stores/' + encodeURIComponent(storeId) + '/reviews' : '/api/stores/unknown/reviews';
@@ -615,6 +818,8 @@
           return;
         }
         document.getElementById('storeReviewComment').value = '';
+        document.getElementById('storeReviewStars').dataset.rating = '0';
+        document.getElementById('storeReviewStars').querySelectorAll('.star').forEach(s => s.classList.remove('filled'));
         loadProductDetail();
       } catch (err) {
         console.error('Submit store review error:', err);
@@ -625,6 +830,15 @@
     document.getElementById('favoriteBtnDetail').addEventListener('click', toggleFavorite);
     document.getElementById('productReviewForm').addEventListener('submit', submitProductReview);
     document.getElementById('storeReviewForm').addEventListener('submit', submitStoreReview);
+    document.getElementById('reserveModalCancel').addEventListener('click', closeReserveModal);
+    document.getElementById('reserveModalSubmit').addEventListener('click', submitReserveWithDateTime);
+    document.getElementById('reserveModal').addEventListener('click', function(e) {
+      if (e.target.id === 'reserveModal') closeReserveModal();
+    });
+    document.getElementById('refreshReservationStatus').addEventListener('click', loadReservationStatus);
+
+    setupStarRating('productReviewStars');
+    setupStarRating('storeReviewStars');
 
     loadProductDetail();
   </script>

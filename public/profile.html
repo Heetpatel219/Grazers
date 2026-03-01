@@ -63,6 +63,17 @@
 
     <section class="profileSaved">
       <div class="savedHeader">
+        <h2><span class="savedIcon">📅</span> My reservations</h2>
+        <button type="button" class="savedViewAll" id="refreshReservationsBtn">Refresh status</button>
+      </div>
+      <p class="subText" style="margin:0 0 10px;">Real-time status: see if the store has confirmed your try-on booking.</p>
+      <div class="savedScroll" id="myReservationsList">
+        <p class="loadingText" id="reservationsLoading">Loading…</p>
+      </div>
+    </section>
+
+    <section class="profileSaved">
+      <div class="savedHeader">
         <h2><span class="savedIcon">🔖</span> Saved for Try-On</h2>
         <a href="/#browse-products" class="savedViewAll">View all →</a>
       </div>
@@ -145,6 +156,42 @@
         `).join('');
       } catch (e) {
         console.error(e);
+      }
+    }
+
+    async function loadMyReservations() {
+      const container = document.getElementById('myReservationsList');
+      const loading = document.getElementById('reservationsLoading');
+      if (!container) return;
+      try {
+        const res = await fetch('/api/my-reservations');
+        if (res.status === 401) {
+          container.innerHTML = '<p class="emptyHint">Sign in to see your reservations.</p>';
+          return;
+        }
+        const reservations = await res.json();
+        if (loading) loading.remove();
+        if (!reservations.length) {
+          container.innerHTML = '<p class="emptyHint">No reservations yet. Reserve items from a product page.</p>';
+          return;
+        }
+        container.innerHTML = reservations.map(r => {
+          const d = r.preferredDate ? new Date(r.preferredDate).toLocaleDateString() : '—';
+          const t = r.preferredTime || '—';
+          const status = (r.status || 'pending').toLowerCase();
+          const statusClass = status === 'confirmed' ? 'confirmed' : status === 'cancelled' ? 'cancelled' : 'pending';
+          return `
+            <div class="reservationCard" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; padding:14px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:10px;">
+              <div>
+                <strong>${r.productTitle || 'Item'}</strong><br>
+                <span style="font-size:0.9rem; color:#64748b;">${r.store_name || 'Store'} · Visit: ${d} at ${t}</span>
+              </div>
+              <span class="reservationStatus ${statusClass}" style="padding:6px 12px; border-radius:999px; font-size:0.8rem; font-weight:700; background:${statusClass === 'confirmed' ? '#d1fae5' : statusClass === 'cancelled' ? '#fee2e2' : '#fef3c7'}; color:${statusClass === 'confirmed' ? '#047857' : statusClass === 'cancelled' ? '#b91c1c' : '#92400e'};">${(r.status || 'pending').toUpperCase()}</span>
+            </div>
+          `;
+        }).join('');
+      } catch (e) {
+        container.innerHTML = '<p class="emptyHint">Could not load reservations.</p>';
       }
     }
 
@@ -241,8 +288,11 @@
       window.location.href = '/';
     }
 
+    document.getElementById('refreshReservationsBtn').addEventListener('click', loadMyReservations);
+
     loadProfile();
     loadRewards();
+    loadMyReservations();
   </script>
 </body>
 </html>

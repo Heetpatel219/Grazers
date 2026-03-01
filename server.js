@@ -136,10 +136,9 @@ app.get('/signin', (req, res) => {
 const requireOwner = (req, res, next) => {
   if (req.session && req.session.isOwner) {
     return next();
-  } else {
-    // Redirect to signin if not logged in or not an owner
-    return res.redirect('/signin');
   }
+  if (req.path.startsWith('/api')) return res.status(401).json({ error: 'Unauthorized' });
+  return res.redirect('/signin');
 };
 
 app.get('/ownerhome.html', requireOwner, (req, res) => {
@@ -347,7 +346,7 @@ app.get('/api/shops-from-products', async (req, res) => {
 // Create a reservation and decrement central inventory
 app.post('/api/reservations', requireAuth, async (req, res) => {
   try {
-    const { productId, quantity } = req.body;
+    const { productId, quantity, preferredDate, preferredTime } = req.body;
     const id = Number(productId);
     const qty = Number(quantity) || 1;
 
@@ -370,6 +369,11 @@ app.post('/api/reservations', requireAuth, async (req, res) => {
     const user = await User.findById(req.session.userId).select('name');
     if (!user) return res.status(401).json({ error: 'User not found' });
 
+    const prefDate = preferredDate ? new Date(preferredDate) : null;
+    if (prefDate && isNaN(prefDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid preferred date' });
+    }
+
     const reservation = await Reservation.create({
       productId: id,
       productTitle: product.title,
@@ -378,19 +382,32 @@ app.post('/api/reservations', requireAuth, async (req, res) => {
       userId: user._id,
       userName: user.name,
       quantity: qty,
-      status: 'pending'
+      priceAtReservation: product.price || 0,
+      status: 'pending',
+      preferredDate: prefDate || undefined,
+      preferredTime: preferredTime ? String(preferredTime).trim() : undefined
     });
-
-    const pointsTotal = await addLoyaltyPoints(user._id, product.price * qty);
 
     res.status(201).json({
       reservation,
-      inventoryLeft: product.quantity || 0,
-      loyaltyPoints: pointsTotal
+      inventoryLeft: product.quantity || 0
     });
   } catch (err) {
     console.error('Create reservation error:', err);
     res.status(500).json({ error: 'Failed to create reservation' });
+  }
+});
+
+// Customer: list my reservations (for real-time status)
+app.get('/api/my-reservations', requireAuth, async (req, res) => {
+  try {
+    const reservations = await Reservation.find({ userId: req.session.userId })
+      .sort({ createdAt: -1 })
+      .lean();
+    res.json(reservations);
+  } catch (err) {
+    console.error('My reservations error:', err);
+    res.status(500).json({ error: 'Failed to load reservations' });
   }
 });
 
@@ -407,6 +424,103 @@ app.get('/api/owner/reservations', requireOwner, async (req, res) => {
   } catch (err) {
     console.error('Owner reservations error:', err);
     res.status(500).json({ error: 'Failed to load reservations' });
+  }
+});
+
+// Owner: confirm a pending reservation (marks as purchase, awards loyalty points)
+app.post('/api/owner/reservations/:id/confirm', requireOwner, async (req, res) => {
+  try {
+    const reservation = await Reservation.findById(req.params.id);
+    if (!reservation) return res.status(404).json({ error: 'Reservation not found' });
+    if (reservation.status !== 'pending') {
+      return res.status(400).json({ error: 'Reservation is not pending' });
+    }
+    reservation.status = 'confirmed';
+    reservation.confirmedAt = new Date();
+    await reservation.save();
+
+    const revenue = (reservation.priceAtReservation || 0) * (reservation.quantity || 1);
+    const pointsTotal = await addLoyaltyPoints(reservation.userId, revenue);
+
+    res.json({ reservation, loyaltyPointsAwarded: pointsTotal });
+  } catch (err) {
+    console.error('Confirm reservation error:', err);
+    res.status(500).json({ error: 'Failed to confirm reservation' });
+  }
+});
+
+// Owner: gross revenue data for chart (week=7 days, month=30 days, year=12 months)
+app.get('/api/owner/revenue', requireOwner, async (req, res) => {
+  try {
+    const { storeId, storeName, period } = req.query;
+    const query = { status: 'confirmed' };
+    if (storeId) query.store_id = storeId;
+    if (storeName) query.store_name = new RegExp(storeName, 'i');
+
+    const reservations = await Reservation.find(query).lean();
+    const now = new Date();
+
+    if (period === 'week') {
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+        const next = new Date(d);
+        next.setDate(next.getDate() + 1);
+        const dayRevenue = reservations
+          .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
+          .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
+        days.push({
+          label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+          date: d.toISOString().slice(0, 10),
+          revenue: dayRevenue
+        });
+      }
+      return res.json({ data: days, period: 'week' });
+    }
+
+    if (period === 'month') {
+      const days = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date(now);
+        d.setDate(d.getDate() - i);
+        d.setHours(0, 0, 0, 0);
+        const next = new Date(d);
+        next.setDate(next.getDate() + 1);
+        const dayRevenue = reservations
+          .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
+          .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
+        days.push({
+          label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          date: d.toISOString().slice(0, 10),
+          revenue: dayRevenue
+        });
+      }
+      return res.json({ data: days, period: 'month' });
+    }
+
+    if (period === 'year') {
+      const months = [];
+      for (let i = 11; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+        const monthRevenue = reservations
+          .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
+          .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
+        months.push({
+          label: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
+          date: d.toISOString().slice(0, 7),
+          revenue: monthRevenue
+        });
+      }
+      return res.json({ data: months, period: 'year' });
+    }
+
+    res.status(400).json({ error: 'Invalid period. Use week, month, or year' });
+  } catch (err) {
+    console.error('Revenue API error:', err);
+    res.status(500).json({ error: 'Failed to load revenue' });
   }
 });
 
@@ -639,12 +753,29 @@ app.get('/api/owner/analytics', requireOwner, async (req, res) => {
 
     const totalInventory = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
     const activeReservations = reservations.filter(r => r.status === 'pending').length;
-    const confirmedToday = reservations.filter(r => {
-      if (r.status !== 'confirmed') return false;
-      const d = new Date(r.createdAt);
+    const confirmedReservations = reservations.filter(r => r.status === 'confirmed');
+    const confirmedToday = confirmedReservations.filter(r => {
+      const d = r.confirmedAt ? new Date(r.confirmedAt) : new Date(r.createdAt);
       const today = new Date();
       return d.toDateString() === today.toDateString();
     }).length;
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const todayEnd = new Date(todayStart);
+    todayEnd.setDate(todayEnd.getDate() + 1);
+    const expectedFootTrafficToday = reservations.filter(r => {
+      const pref = r.preferredDate ? new Date(r.preferredDate) : null;
+      if (!pref) return false;
+      pref.setHours(0, 0, 0, 0);
+      return pref.getTime() >= todayStart.getTime() && pref.getTime() < todayEnd.getTime();
+    }).length;
+    const grossRevenueToday = confirmedReservations
+      .filter(r => {
+        const d = r.confirmedAt ? new Date(r.confirmedAt) : new Date(r.createdAt);
+        const today = new Date();
+        return d.toDateString() === today.toDateString();
+      })
+      .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
 
     const inventoryByCategory = {};
     products.forEach(p => {
@@ -681,6 +812,8 @@ app.get('/api/owner/analytics', requireOwner, async (req, res) => {
       inventoryByCategory,
       activeReservations,
       confirmedToday,
+      expectedFootTrafficToday,
+      grossRevenueToday,
       reservationCount: reservations.length,
       avgStoreRating: Number(avgRating.toFixed(2)),
       reviewCount: reviews.length,
