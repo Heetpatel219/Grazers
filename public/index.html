@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grazers | Home</title>
   <link rel="stylesheet" href="home.css" />
 </head>
+
 <body>
 
   <header class="topbar">
@@ -14,12 +16,10 @@
       <div class="brandText">
         <div class="brandName">Grazers</div>
         <div class="brandTag">FASHION COLLECTION</div>
-      </div> 
+      </div>
     </div>
 
-    <form class="searchWrap" id="searchForm">
-      <input class="searchInput" id="searchBar" type="text" placeholder="Search clothing, accessories, wearables..." autocomplete="off" />
-    </form>
+
 
     <div class="topIcons">
       <a class="topLink" id="signInLink" href="/signin" style="display: none;">Sign In</a>
@@ -53,6 +53,30 @@
         <h2>Browse Products</h2>
         <p class="subText">Discover our curated premium fashion and accessories from the collection</p>
         <div class="featuredStrip" id="featuredStrip"></div>
+
+        <form class="searchWrap" id="searchForm" style="margin-bottom: 24px;">
+          <input class="searchInput" id="searchBar" type="text" placeholder="Search clothing, accessories, wearables..."
+            autocomplete="off" style="width: 100%; box-sizing: border-box;" />
+        </form>
+
+        <div class="filterBar">
+          <button type="button" class="filterBtn active" data-filter="all">All</button>
+          <button type="button" class="filterBtn" data-filter="tops">Tops</button>
+          <button type="button" class="filterBtn" data-filter="bottoms">Bottoms</button>
+          <button type="button" class="filterBtn" data-filter="dresses">Dresses</button>
+          <button type="button" class="filterBtn" data-filter="shoes">Shoes</button>
+          <button type="button" class="filterBtn" data-filter="swimsuits">Swimsuits</button>
+          <button type="button" class="filterBtn" data-filter="sportswear">Sportswear</button>
+          <button type="button" class="filterBtn" data-filter="equipment">Equipment</button>
+          <button type="button" class="filterBtn" data-filter="t-shirts">T-shirts</button>
+          <button type="button" class="filterBtn" data-filter="socks">Socks</button>
+          <button type="button" class="filterBtn" data-filter="scarfs">Scarfs</button>
+          <button type="button" class="filterBtn" data-filter="hats">Hats</button>
+          <button type="button" class="filterBtn" data-filter="accessories">Accessories</button>
+          <button type="button" class="filterBtn" data-filter="jerseys">Jerseys</button>
+          <button type="button" class="filterBtn" data-filter="latest">Latest</button>
+        </div>
+
         <div class="sectionLabel">All products</div>
         <div class="categoryGrid productGrid" id="productGrid">
           <p class="loadingText">Loading products…</p>
@@ -106,12 +130,12 @@
       try {
         const response = await fetch('/api/check-auth');
         const data = await response.json();
-        
+
         const signInLink = document.getElementById('signInLink');
         const signUpBtn = document.getElementById('signUpBtn');
         const userInfo = document.getElementById('userInfo');
         const userName = document.getElementById('userName');
-        
+
         if (data.isLoggedIn) {
           if (signInLink) signInLink.style.display = 'none';
           if (signUpBtn) signUpBtn.style.display = 'none';
@@ -161,15 +185,19 @@
       const favIcon = isFav ? '♥' : '♡';
       return `
         <div class="productCard" data-product-id="${id}">
-          <div class="productCardImg">
-            <button type="button" class="${favClass}" data-product-id="${id}" title="${isFav ? 'Remove from favourites' : 'Add to favourites'}" aria-label="Favorite">${favIcon}</button>
-            <img src="${img}" alt="${title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect fill=%22%23eee%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>No image</text></svg>'">
-            <span class="productBadge ${item.is_featured ? 'badgePink' : (item.is_best_seller ? 'badgePurple' : 'badgeBlue')}">${cat}</span>
+          <div class="productCardClickable" data-product-id="${id}">
+            <div class="productCardImg">
+              <button type="button" class="${favClass}" data-product-id="${id}" title="${isFav ? 'Remove from favourites' : 'Add to favourites'}" aria-label="Favorite">${favIcon}</button>
+              <img src="${img}" alt="${title}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect fill=%22%23eee%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>No image</text></svg>'">
+              <span class="productBadge ${item.is_featured ? 'badgePink' : (item.is_best_seller ? 'badgePurple' : 'badgeBlue')}">${cat}</span>
+            </div>
+            <div class="productCardBody">
+              <h3>${title}</h3>
+              ${store ? `<p class="productStore">${store}</p>` : ''}
+              <p class="productPrice">$${price}</p>
+            </div>
           </div>
-          <div class="productCardBody">
-            <h3>${title}</h3>
-            ${store ? `<p class="productStore">${store}</p>` : ''}
-            <p class="productPrice">$${price}</p>
+          <div class="productCardActions">
             <button type="button" class="productBtn reserveBtn" data-price="${item.price}" data-product-id="${id}">Reserve</button>
           </div>
         </div>
@@ -197,8 +225,9 @@
       }
     }
 
-    // Load all products, optionally filtered by shop or free-text search query
-    async function loadProducts(searchQ) {
+    // Load all products, optionally filtered by shop, category or free-text search query
+    // filterOverride can be 'tops', 'bottoms', or 'latest'
+    async function loadProducts(searchQ, filterOverride = 'all') {
       const grid = document.getElementById('productGrid');
       if (!grid) return;
       const params = new URLSearchParams(window.location.search);
@@ -206,33 +235,64 @@
       const q = typeof searchQ === 'string' ? searchQ : params.get('q') || '';
       let url = '/api/products?';
       if (shop) url += 'shop=' + encodeURIComponent(shop) + '&';
-      if (q) url += 'q=' + encodeURIComponent(q.trim());
-      url = url.replace(/\?$/, '') || '/api/products';
+      if (q) url += 'q=' + encodeURIComponent(q.trim()) + '&';
+
+      // Map simplified filters to category query assuming server handles "category"
+      if (filterOverride !== 'all' && filterOverride !== 'latest') {
+        url += 'category=' + encodeURIComponent(filterOverride) + '&';
+      }
+
+      url = url.replace(/[&?]$/, '') || '/api/products';
       try {
         const response = await fetch(url);
-        const products = await response.json();
+        let products = await response.json();
         grid.innerHTML = '';
+
+        if (filterOverride === 'latest') {
+          // For latest, simply shuffle products to simulate "random" feature pulling
+          products = products.sort(() => 0.5 - Math.random());
+        }
+
         if (products.length === 0) {
           grid.innerHTML = '<p class="emptyHint">' + (q ? 'No products match your search.' : (shop ? 'No products for this shop.' : 'No products in the collection yet.')) + '</p>';
           return;
         }
+
         const sectionLabel = document.querySelector('#browse-products .sectionLabel');
         if (sectionLabel) {
-          if (q) sectionLabel.textContent = 'Search: "' + q + '"';
+          if (filterOverride === 'latest') sectionLabel.textContent = 'LATEST DROPS';
+          else if (filterOverride !== 'all') sectionLabel.textContent = 'Shop ' + filterOverride;
+          else if (q) sectionLabel.textContent = 'Search: "' + q + '"';
           else if (shop) sectionLabel.textContent = 'Products from ' + shop;
           else sectionLabel.textContent = 'All products';
         }
+
         products.forEach(item => {
           grid.insertAdjacentHTML('beforeend', renderProductCard(item, favoriteIds.includes(item.id)));
         });
-        if ((shop || q) && window.location.hash === '#browse-products') {
-          document.getElementById('browse-products').scrollIntoView({ behavior: 'smooth' });
+
+        if ((shop || q || filterOverride !== 'all') && window.location.hash === '#browse-products') {
+          // do not scroll immediately on filter click to avoid jarring UX
         }
       } catch (err) {
         console.error('Failed to load products:', err);
         grid.innerHTML = '<p class="emptyHint">Error loading products.</p>';
       }
     }
+
+    // Handle Live Filters
+    document.addEventListener('click', function (e) {
+      if (e.target.classList.contains('filterBtn')) {
+        const filterBtns = document.querySelectorAll('.filterBtn');
+        filterBtns.forEach(btn => btn.classList.remove('active'));
+        e.target.classList.add('active');
+
+        const filterType = e.target.getAttribute('data-filter');
+        // Retrieve current search string to combine with filter
+        const currentSearch = document.getElementById('searchBar').value.trim();
+        loadProducts(currentSearch, filterType);
+      }
+    });
 
     // Load shops derived from the Product collection so "Browse by Shop" stays in sync with inventory
     async function loadShops() {
@@ -267,7 +327,7 @@
     }
 
     // Toggle a product as favourite for the current user (delegated click handler)
-    document.addEventListener('click', async function(e) {
+    document.addEventListener('click', async function (e) {
       const favBtn = e.target.closest('.productFavBtn');
       if (!favBtn) return;
       const productId = parseInt(favBtn.dataset.productId, 10);
@@ -305,47 +365,93 @@
       }
     });
 
-    // Reserving an item earns loyalty points (1 point per $1, rounded down)
-    document.addEventListener('click', async function(e) {
+    // Reserve an item via centralized reservation API (also updates loyalty points)
+    document.addEventListener('click', async function (e) {
       const btn = e.target.closest('.reserveBtn');
       if (!btn) return;
-      const price = parseFloat(btn.dataset.price);
       const productId = btn.dataset.productId;
-      if (!Number.isFinite(price) || price <= 0) return;
+      const price = parseFloat(btn.dataset.price);
       try {
-        const res = await fetch('/api/loyalty/earn', {
+        const res = await fetch('/api/reservations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ amount: price })
+          body: JSON.stringify({ productId, quantity: 1 })
         });
         if (res.status === 401) {
           alert('Please sign in to reserve and earn points.');
           return;
         }
-        if (res.ok) {
-          const data = await res.json();
-          alert('Reserved! You earned ' + Math.floor(price) + ' loyalty points. Total: ' + data.points + ' pts.');
+        const data = await res.json();
+        if (!res.ok) {
+          if (typeof data.inventoryLeft === 'number' && data.inventoryLeft === 0) {
+            btn.disabled = true;
+            btn.textContent = 'Out of stock';
+          }
+          alert(data.error || 'Could not reserve this item.');
+          return;
         }
+        if (typeof data.inventoryLeft === 'number' && data.inventoryLeft === 0) {
+          btn.disabled = true;
+          btn.textContent = 'Out of stock';
+        }
+        alert('Reserved! You will earn loyalty points when the store confirms your purchase.');
       } catch (err) {
         console.error('Reserve error:', err);
+        alert('Error while reserving item.');
       }
     });
 
     // Search: submit handler and debounced input for a smoother UX
     let searchDebounce;
-    document.getElementById('searchForm').addEventListener('submit', function(e) {
+    document.getElementById('searchForm').addEventListener('submit', function (e) {
       e.preventDefault();
       const q = document.getElementById('searchBar').value.trim();
-      loadProducts(q);
+      let activeFilter = document.querySelector('.filterBtn.active');
+      let filterValue = activeFilter ? activeFilter.getAttribute('data-filter') : 'all';
+
+      if (q === '') {
+        filterValue = 'all';
+        document.querySelectorAll('.filterBtn').forEach(btn => btn.classList.remove('active'));
+        const allBtn = document.querySelector('.filterBtn[data-filter="all"]');
+        if (allBtn) allBtn.classList.add('active');
+      }
+
+      loadProducts(q, filterValue);
       if (q) window.history.replaceState({}, '', '?q=' + encodeURIComponent(q) + (window.location.hash || ''));
+      else window.history.replaceState({}, '', window.location.pathname + (window.location.hash || ''));
     });
-    document.getElementById('searchBar').addEventListener('input', function() {
+
+    document.getElementById('searchBar').addEventListener('input', function () {
       clearTimeout(searchDebounce);
       const q = this.value.trim();
-      searchDebounce = setTimeout(function() {
-        loadProducts(q);
+      searchDebounce = setTimeout(function () {
+        let activeFilter = document.querySelector('.filterBtn.active');
+        let filterValue = activeFilter ? activeFilter.getAttribute('data-filter') : 'all';
+
+        if (q === '') {
+          filterValue = 'all';
+          document.querySelectorAll('.filterBtn').forEach(btn => btn.classList.remove('active'));
+          const allBtn = document.querySelector('.filterBtn[data-filter="all"]');
+          if (allBtn) allBtn.classList.add('active');
+        }
+
+        loadProducts(q, filterValue);
         if (q) window.history.replaceState({}, '', '?q=' + encodeURIComponent(q) + (window.location.hash || ''));
+        else window.history.replaceState({}, '', window.location.pathname + (window.location.hash || ''));
       }, 400);
+    });
+
+    // Click through to product detail page when clicking on card (excluding buttons)
+    document.addEventListener('click', function (e) {
+      const clickable = e.target.closest('.productCardClickable');
+      if (!clickable) return;
+      const favBtn = e.target.closest('.productFavBtn');
+      const reserveBtn = e.target.closest('.reserveBtn');
+      if (favBtn || reserveBtn) return;
+      const id = clickable.dataset.productId;
+      if (id) {
+        window.location.href = '/product.html?id=' + encodeURIComponent(id);
+      }
     });
 
     // Logout helper used by header link
@@ -368,4 +474,5 @@
     })();
   </script>
 </body>
+
 </html>

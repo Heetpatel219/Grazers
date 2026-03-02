@@ -229,6 +229,71 @@
       color: #6b7280;
       font-weight: 600;
     }
+
+    .chart-period-btns {
+      display: flex;
+      gap: 8px;
+    }
+    .period-btn {
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid #d1d5db;
+      background: #fff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: #6b7280;
+    }
+    .period-btn:hover, .period-btn.active {
+      background: var(--accent-green);
+      color: white;
+      border-color: var(--accent-green);
+    }
+    .revenue-chart {
+      min-height: 200px;
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      padding: 20px 0;
+    }
+    .revenue-bar-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-width: 0;
+    }
+    .revenue-bar {
+      width: 100%;
+      max-width: 40px;
+      min-height: 4px;
+      background: var(--accent-green);
+      border-radius: 6px 6px 0 0;
+      transition: height 0.2s;
+    }
+    .revenue-bar-label {
+      font-size: 0.7rem;
+      color: #6b7280;
+      margin-top: 6px;
+      text-align: center;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+    .btn-confirm-sm {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      border-radius: 8px;
+      background: var(--accent-green);
+      color: white;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-confirm-sm:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
   </style>
 </head>
 
@@ -248,74 +313,61 @@
 
   <main>
     <section>
-      <h2>Today's Revenue</h2>
-      <p class="stat">$5,420</p>
-      <p class="change positive">▲ +11.8%</p>
-      <p class="sub-text">vs $4,850 yesterday</p>
+      <h2>Today's Gross Revenue</h2>
+      <p id="today-revenue" class="stat">$0</p>
+      <p class="sub-text">From confirmed purchases</p>
     </section>
 
     <section>
-      <h2>Foot Traffic</h2>
-      <p class="stat">356</p>
-      <p class="change negative">▼ -11.2%</p>
-      <p class="sub-text">Expected: 380–420</p>
+      <h2>Foot Traffic (reservations)</h2>
+      <p id="foot-traffic" class="stat">0</p>
+      <p class="sub-text">Total reservations for this store</p>
     </section>
 
     <section>
       <h2>Total Inventory</h2>
-      <p class="stat">1,279</p>
-      <p class="sub-text">Across 8 categories</p>
+      <p id="total-inventory" class="stat">0</p>
+      <p id="inventory-categories" class="sub-text">Across 0 categories</p>
       <div style="background:#eee; height:8px; border-radius:4px; margin-top:15px;">
-        <div style="background:var(--accent-green); width:65%; height:100%; border-radius:4px;"></div>
+        <div id="inventory-bar" style="background:var(--accent-green); width:0%; height:100%; border-radius:4px;"></div>
       </div>
     </section>
 
     <section>
       <h2>Active Reservations</h2>
-      <p class="stat">4</p>
-      <p class="sub-text"><strong style="color:var(--accent-green)">1</strong> confirmed today</p>
-      <p class="sub-text"><strong>3</strong> pending</p>
+      <p id="active-reservations" class="stat">0</p>
+      <p class="sub-text"><strong id="confirmed-today" style="color:var(--accent-green)">0</strong> confirmed today</p>
+      <p class="sub-text"><strong id="reservations-total">0</strong> total reservations</p>
+    </section>
+
+    <section>
+      <h2>Daily Expected Foot Traffic</h2>
+      <p id="expected-foot-traffic" class="stat">0</p>
+      <p class="sub-text">Visits scheduled for today</p>
     </section>
     <section class="full-width list-card">
       <div class="list-header">
         <div>
-          <h2>Top Selling Products</h2>
-          <p class="sub-text">Best performers this week</p>
+          <h2>Gross Revenue</h2>
+          <p class="sub-text">Revenue from confirmed purchases</p>
+        </div>
+        <div class="chart-period-btns">
+          <button type="button" class="period-btn active" data-period="week">Week</button>
+          <button type="button" class="period-btn" data-period="month">Month</button>
+          <button type="button" class="period-btn" data-period="year">Year</button>
+        </div>
+      </div>
+      <div id="revenue-chart" class="revenue-chart"></div>
+    </section>
+    <section class="full-width list-card">
+      <div class="list-header">
+        <div>
+          <h2>Top Products</h2>
+          <p class="sub-text">Most reserved items</p>
         </div>
       </div>
 
-      <div class="list-item">
-        <div class="item-left">
-          <div class="avatar">D</div>
-          <div>
-            <strong>Designer Silk Dress</strong><br>
-            <span class="sub-text">45 sales · $6,750</span>
-          </div>
-        </div>
-        <span class="pill green">+12%</span>
-      </div>
-
-      <div class="list-item">
-        <div class="item-left">
-          <div class="avatar">L</div>
-          <div>
-            <strong>Leather Handbag</strong><br>
-            <span class="sub-text">38 sales · $5,320</span>
-          </div>
-        </div>
-        <span class="pill green">+8%</span>
-      </div>
-
-      <div class="list-item">
-        <div class="item-left">
-          <div class="avatar">S</div>
-          <div>
-            <strong>Sports Watch</strong><br>
-            <span class="sub-text">32 sales · $8,960</span>
-          </div>
-        </div>
-        <span class="pill green">+15%</span>
-      </div>
+      <div id="top-products"></div>
     </section>
     <section class="full-width list-card">
       <div class="list-header">
@@ -323,34 +375,9 @@
           <h2>Recent Reservations</h2>
           <p class="sub-text">Customer try-on appointments</p>
         </div>
-        <button class="view-all">View All</button>
       </div>
 
-      <div class="list-item">
-        <div class="item-left">
-          <div class="avatar">S</div>
-          <div>
-            <strong>Sarah Johnson</strong><br>
-            <span class="sub-text">2 items · 2:00 PM – 4:00 PM</span>
-          </div>
-        </div>
-        <span class="pill yellow">Pending</span>
-      </div>
-      <div class="actions">
-        <button class="btn-confirm">✔ Confirm</button>
-        <button class="btn-decline">✖ Decline</button>
-      </div>
-
-      <div class="list-item">
-        <div class="item-left">
-          <div class="avatar">M</div>
-          <div>
-            <strong>Michael Chen</strong><br>
-            <span class="sub-text">3 items · 3:00 PM – 5:00 PM</span>
-          </div>
-        </div>
-        <span class="pill green">Confirmed</span>
-      </div>
+      <div id="recent-reservations"></div>
     </section>
     <section class="full-width list-card">
       <div class="list-header">
@@ -358,50 +385,9 @@
           <h2>Customer Reviews</h2>
           <p class="sub-text">Recent feedback from customers</p>
         </div>
-        <button class="view-all">View All</button>
       </div>
 
-      <div class="list-item review-item">
-        <div class="review-header">
-          <div class="item-left">
-            <div class="avatar">S</div>
-            <div>
-              <strong>Sarah Johnson</strong><br>
-              <span class="sub-text">Dec 8, 2025 · Summer Floral Dress</span>
-            </div>
-          </div>
-          <div class="stars">★★★★★</div>
-        </div>
-
-        <div class="review-body">
-          <p>
-            Amazing selection and the try-on service is so convenient! Staff was super
-            helpful and the store atmosphere was perfect.
-          </p>
-          <span class="verified">Verified Purchase</span>
-        </div>
-      </div>
-
-      <div class="list-item review-item">
-        <div class="review-header">
-          <div class="item-left">
-            <div class="avatar">E</div>
-            <div>
-              <strong>Emma Rodriguez</strong><br>
-              <span class="sub-text">Dec 6, 2025 · Casual Denim Jacket</span>
-            </div>
-          </div>
-          <div class="stars">★★★★☆</div>
-        </div>
-
-        <div class="review-body">
-          <p>
-            Love the concept! The loyalty points system is a nice touch.
-            Only wish there were more payment options.
-          </p>
-          <span class="verified">Verified Purchase</span>
-        </div>
-      </div>
+      <div id="customer-reviews"></div>
     </section>
 
   </main>
@@ -416,6 +402,237 @@
       if (target) target.textContent = formatted;
     })();
 
+    function formatDate(iso) {
+      if (!iso) return '';
+      const d = new Date(iso);
+      return d.toLocaleDateString();
+    }
+
+    function starsForRating(r) {
+      if (!r || r <= 0) return '';
+      const rounded = Math.round(r);
+      return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
+    }
+
+    async function loadStoresForOwner() {
+      try {
+        const res = await fetch('/api/shops-from-products');
+        const shops = await res.json();
+        if (!Array.isArray(shops) || shops.length === 0) return;
+        const select = document.createElement('select');
+        select.id = 'storeSelect';
+        select.style.padding = '6px 10px';
+        select.style.borderRadius = '999px';
+        select.style.border = '1px solid #d1d5db';
+        shops.forEach(s => {
+          const opt = document.createElement('option');
+          opt.value = s.name;
+          opt.textContent = s.name;
+          select.appendChild(opt);
+        });
+        select.addEventListener('change', () => loadAnalytics(select.value));
+        const headerInfo = document.querySelector('.dashboard-info');
+        if (headerInfo) {
+          headerInfo.insertBefore(select, headerInfo.firstChild);
+        }
+        loadAnalytics(shops[0].name);
+      } catch (e) {
+        console.error('Load stores for owner error:', e);
+      }
+    }
+
+    async function loadAnalytics(storeName) {
+      try {
+        const res = await fetch('/api/owner/analytics?storeName=' + encodeURIComponent(storeName));
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const todayRevenue = document.getElementById('today-revenue');
+        const footTraffic = document.getElementById('foot-traffic');
+        const totalInventory = document.getElementById('total-inventory');
+        const inventoryCategories = document.getElementById('inventory-categories');
+        const inventoryBar = document.getElementById('inventory-bar');
+        const activeReservations = document.getElementById('active-reservations');
+        const confirmedToday = document.getElementById('confirmed-today');
+        const reservationsTotal = document.getElementById('reservations-total');
+
+        todayRevenue.textContent = '$' + (data.grossRevenueToday || 0).toFixed(0);
+        footTraffic.textContent = data.reservationCount || 0;
+        totalInventory.textContent = data.totalInventory || 0;
+        const catNames = Object.keys(data.inventoryByCategory || {});
+        inventoryCategories.textContent = 'Across ' + catNames.length + ' categories';
+        inventoryBar.style.width = data.totalInventory ? '100%' : '0%';
+        activeReservations.textContent = data.activeReservations || 0;
+        confirmedToday.textContent = data.confirmedToday || 0;
+        reservationsTotal.textContent = data.reservationCount || 0;
+        const expectedFoot = document.getElementById('expected-foot-traffic');
+        if (expectedFoot) expectedFoot.textContent = data.expectedFootTrafficToday ?? 0;
+
+        const topWrap = document.getElementById('top-products');
+        topWrap.innerHTML = '';
+        (data.topProducts || []).forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'list-item';
+          div.innerHTML = `
+            <div class="item-left">
+              <div class="avatar">${(p.title || 'P').charAt(0).toUpperCase()}</div>
+              <div>
+                <strong>${p.title || 'Product'}</strong><br>
+                <span class="sub-text">${p.reservedQty || 0} reservations</span>
+              </div>
+            </div>
+          `;
+          topWrap.appendChild(div);
+        });
+
+        const reviewsWrap = document.getElementById('customer-reviews');
+        reviewsWrap.innerHTML = '';
+        (data.latestReviews || []).forEach(r => {
+          const div = document.createElement('div');
+          div.className = 'list-item review-item';
+          div.innerHTML = `
+            <div class="review-header">
+              <div class="item-left">
+                <div class="avatar">${(r.userName || 'C').charAt(0).toUpperCase()}</div>
+                <div>
+                  <strong>${r.userName || 'Customer'}</strong><br>
+                  <span class="sub-text">${formatDate(r.createdAt)}</span>
+                </div>
+              </div>
+              <div class="stars">${starsForRating(r.rating || 0)}</div>
+            </div>
+            <div class="review-body">
+              <p>${(r.comment || '').replace(/</g, '&lt;')}</p>
+              ${r.storeReply ? `<span class="verified">Store reply: ${r.storeReply}</span>` : ''}
+              <div class="actions">
+                <input type="text" data-review-id="${r._id}" class="reply-input" placeholder="Write a reply..." style="flex:2; padding:8px; border-radius:10px; border:1px solid #d1d5db; font-size:0.85rem;">
+                <button class="btn-confirm" data-reply-btn data-review-id="${r._id}">Reply</button>
+              </div>
+            </div>
+          `;
+          reviewsWrap.appendChild(div);
+        });
+
+        const recentWrap = document.getElementById('recent-reservations');
+        recentWrap.innerHTML = '';
+        const resListRes = await fetch('/api/owner/reservations?storeName=' + encodeURIComponent(storeName));
+        if (resListRes.ok) {
+          const reservations = await resListRes.json();
+          reservations.slice(0, 10).forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'list-item';
+            const isPending = r.status === 'pending';
+            const visitWhen = r.preferredDate || r.preferredTime
+              ? (formatDate(r.preferredDate) || '') + (r.preferredTime ? ' at ' + r.preferredTime : '')
+              : '—';
+            div.innerHTML = `
+              <div class="item-left">
+                <div class="avatar">${(r.userName || 'C').charAt(0).toUpperCase()}</div>
+                <div>
+                  <strong>${r.userName || 'Customer'}</strong><br>
+                  <span class="sub-text">${r.productTitle || 'Item'} · ${r.quantity || 1} qty</span><br>
+                  <span class="sub-text">Visit: ${visitWhen}</span>
+                </div>
+              </div>
+              <div style="display:flex; align-items:center; gap:10px;">
+                ${isPending ? `<button type="button" class="btn-confirm-sm" data-confirm-reservation data-id="${r._id}">Confirm</button>` : ''}
+                <span class="pill ${r.status === 'confirmed' ? 'green' : 'yellow'}">${(r.status || 'pending').toUpperCase()}</span>
+              </div>
+            `;
+            recentWrap.appendChild(div);
+          });
+        }
+
+        loadRevenueChart(storeName, document.querySelector('.period-btn.active')?.dataset.period || 'week');
+      } catch (e) {
+        console.error('Load analytics error:', e);
+      }
+    }
+
+    async function loadRevenueChart(storeName, period) {
+      try {
+        const res = await fetch('/api/owner/revenue?storeName=' + encodeURIComponent(storeName) + '&period=' + (period || 'week'));
+        if (!res.ok) return;
+        const { data } = await res.json();
+        const chartEl = document.getElementById('revenue-chart');
+        if (!chartEl) return;
+        chartEl.innerHTML = '';
+        if (!data || data.length === 0) {
+          chartEl.innerHTML = '<p class="sub-text" style="padding:20px;">No revenue data yet. Confirm reservations to see gross revenue.</p>';
+          return;
+        }
+        const maxRev = Math.max(...data.map(d => d.revenue), 1);
+        data.forEach(d => {
+          const wrap = document.createElement('div');
+          wrap.className = 'revenue-bar-wrap';
+          const pct = maxRev > 0 ? (d.revenue / maxRev) * 100 : 0;
+          wrap.innerHTML = `
+            <div class="revenue-bar" style="height:${Math.max(pct, 2)}%"></div>
+            <div class="revenue-bar-label">${d.label}</div>
+          `;
+          wrap.title = '$' + d.revenue.toFixed(0);
+          chartEl.appendChild(wrap);
+        });
+      } catch (err) {
+        console.error('Load revenue chart error:', err);
+      }
+    }
+
+    document.querySelectorAll('.period-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const storeSelect = document.getElementById('storeSelect');
+        if (storeSelect) loadRevenueChart(storeSelect.value, this.dataset.period);
+      });
+    });
+
+    document.addEventListener('click', async function(e) {
+      const confirmBtn = e.target.closest('[data-confirm-reservation]');
+      if (confirmBtn) {
+        e.preventDefault();
+        const id = confirmBtn.getAttribute('data-id');
+        if (!id) return;
+        confirmBtn.disabled = true;
+        try {
+          const res = await fetch('/api/owner/reservations/' + id + '/confirm', { method: 'POST' });
+          if (res.ok) {
+            const select = document.getElementById('storeSelect');
+            if (select) loadAnalytics(select.value);
+          } else {
+            const err = await res.json().catch(() => ({}));
+            alert(err.error || 'Could not confirm reservation.');
+            confirmBtn.disabled = false;
+          }
+        } catch (err) {
+          console.error('Confirm error:', err);
+          confirmBtn.disabled = false;
+        }
+        return;
+      }
+      const btn = e.target.closest('[data-reply-btn]');
+      if (!btn) return;
+      const reviewId = btn.getAttribute('data-review-id');
+      const input = document.querySelector('input.reply-input[data-review-id="' + reviewId + '"]');
+      if (!input || !input.value.trim()) return;
+      try {
+        const res = await fetch('/api/reviews/' + encodeURIComponent(reviewId) + '/reply', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ reply: input.value.trim() })
+        });
+        if (res.ok) {
+          input.value = '';
+          const select = document.getElementById('storeSelect');
+          if (select) loadAnalytics(select.value);
+        } else {
+          alert('Could not save reply.');
+        }
+      } catch (err) {
+        console.error('Reply save error:', err);
+      }
+    });
+
     // Logout logic
     async function logout(e) {
       e.preventDefault();
@@ -426,6 +643,8 @@
         window.location.href = '/signin';
       }
     }
+
+    loadStoresForOwner();
   </script>
 
 </body>
