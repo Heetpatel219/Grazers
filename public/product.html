@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,26 +15,34 @@
       grid-template-columns: minmax(0, 2fr) minmax(0, 1.5fr);
       gap: 32px;
     }
+
     .product-detail-main img {
       width: 100%;
       max-height: 420px;
-      object-fit: cover;
+      height: 420px;
+      object-fit: contain;
+      padding: 20px;
+      box-sizing: border-box;
       border-radius: 16px;
       box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
-      background: #f3f4f6;
+      background: #ffffff;
     }
+
     .product-meta {
       margin-top: 16px;
     }
+
     .product-meta h1 {
       margin: 0 0 8px;
       font-size: 1.8rem;
     }
+
     .product-store {
       font-size: 0.95rem;
       color: #6b7280;
       margin-bottom: 6px;
     }
+
     .rating-row {
       display: flex;
       flex-wrap: wrap;
@@ -42,31 +51,38 @@
       font-size: 0.9rem;
       margin-bottom: 12px;
     }
+
     .stars {
       color: #fbbf24;
       font-size: 1.1rem;
     }
+
     .price {
       font-size: 1.8rem;
       font-weight: 700;
       margin: 12px 0;
     }
+
     .inventory {
       font-size: 0.9rem;
       color: #059669;
       margin-bottom: 16px;
     }
+
     .inventory.low {
       color: #ea580c;
     }
+
     .inventory.empty {
       color: #b91c1c;
     }
+
     .detail-actions {
       display: flex;
       gap: 12px;
       margin-bottom: 20px;
     }
+
     .btn-primary {
       flex: 1;
       background: linear-gradient(135deg, #ec4899, #6366f1);
@@ -77,11 +93,13 @@
       font-weight: 600;
       cursor: pointer;
     }
+
     .btn-primary[disabled] {
       opacity: 0.6;
       cursor: not-allowed;
       background: #9ca3af;
     }
+
     .btn-secondary {
       padding: 12px 18px;
       border-radius: 999px;
@@ -92,16 +110,19 @@
       cursor: pointer;
       min-width: 120px;
     }
+
     .btn-secondary.active {
       border-color: #f97316;
       color: #f97316;
       background: #fff7ed;
     }
+
     .detail-section {
       margin-top: 24px;
       padding-top: 16px;
       border-top: 1px solid #e5e7eb;
     }
+
     .detail-section h2 {
       margin: 0 0 12px;
       font-size: 1.1rem;
@@ -109,35 +130,42 @@
       text-transform: uppercase;
       color: #6b7280;
     }
+
     .reviews-list {
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
+
     .review-card {
       padding: 14px 16px;
       border-radius: 12px;
       background: #f9fafb;
       border: 1px solid #e5e7eb;
     }
+
     .review-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 6px;
     }
+
     .review-author {
       font-weight: 600;
       font-size: 0.95rem;
     }
+
     .review-date {
       font-size: 0.8rem;
       color: #9ca3af;
     }
+
     .review-comment {
       font-size: 0.9rem;
       color: #4b5563;
     }
+
     .review-reply {
       margin-top: 8px;
       padding: 8px 10px;
@@ -146,6 +174,7 @@
       font-size: 0.85rem;
       color: #047857;
     }
+
     .related-grid {
       display: flex;
       gap: 14px;
@@ -154,6 +183,7 @@
       padding-bottom: 6px;
       scroll-snap-type: x mandatory;
     }
+
     .related-card {
       flex: 0 0 180px;
       padding: 10px;
@@ -163,15 +193,18 @@
       cursor: pointer;
       scroll-snap-align: start;
     }
+
     .related-card-title {
       font-size: 0.9rem;
       font-weight: 600;
       margin-bottom: 4px;
     }
+
     .related-card-price {
       font-size: 0.85rem;
       color: #4b5563;
     }
+
     .small-tag {
       display: inline-flex;
       align-items: center;
@@ -182,11 +215,13 @@
       background: #eff6ff;
       color: #1d4ed8;
     }
+
     .detail-sidebar {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
+
     .panel {
       border-radius: 16px;
       background: #ffffff;
@@ -194,21 +229,25 @@
       padding: 18px 18px 20px;
       border: 1px solid #e5e7eb;
     }
+
     .panel h3 {
       margin: 0 0 8px;
       font-size: 1rem;
     }
+
     .panel p {
       margin: 4px 0;
       font-size: 0.9rem;
       color: #4b5563;
     }
+
     .review-form {
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 8px;
     }
+
     .review-form textarea {
       min-height: 70px;
       resize: vertical;
@@ -218,6 +257,7 @@
       font-size: 0.9rem;
       font-family: inherit;
     }
+
     .star-rating {
       display: flex;
       gap: 4px;
@@ -225,19 +265,24 @@
       cursor: pointer;
       margin-bottom: 8px;
     }
+
     .star-rating .star {
       color: #d1d5db;
       transition: color 0.15s;
     }
+
     .star-rating .star.filled {
       color: #fbbf24;
     }
+
     .star-rating:hover .star {
       color: #fbbf24;
     }
-    .star-rating .star:hover ~ .star {
+
+    .star-rating .star:hover~.star {
       color: #d1d5db;
     }
+
     .related-card-img {
       width: 100%;
       aspect-ratio: 1;
@@ -246,10 +291,11 @@
       background: #f3f4f6;
       margin-bottom: 8px;
     }
+
     .reserve-modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.4);
+      background: rgba(0, 0, 0, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -258,21 +304,35 @@
       visibility: hidden;
       transition: opacity 0.2s, visibility 0.2s;
     }
+
     .reserve-modal-overlay.open {
       opacity: 1;
       visibility: visible;
     }
+
     .reserve-modal {
       background: #fff;
       border-radius: 16px;
       padding: 24px;
       max-width: 360px;
       width: 90%;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
     }
-    .reserve-modal h3 { margin: 0 0 16px; font-size: 1.2rem; }
-    .reserve-modal label { display: block; font-size: 0.9rem; font-weight: 600; margin-bottom: 6px; }
-    .reserve-modal input, .reserve-modal select {
+
+    .reserve-modal h3 {
+      margin: 0 0 16px;
+      font-size: 1.2rem;
+    }
+
+    .reserve-modal label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .reserve-modal input,
+    .reserve-modal select {
       width: 100%;
       padding: 10px 12px;
       border: 1px solid #e5e7eb;
@@ -281,23 +341,86 @@
       margin-bottom: 14px;
       box-sizing: border-box;
     }
-    .reserve-modal-actions { display: flex; gap: 10px; margin-top: 20px; }
-    .reserve-modal-actions button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 600; cursor: pointer; border: none; }
-    .reserve-modal-actions .btn-cancel { background: #f3f4f6; color: #374151; }
-    .reserve-modal-actions .btn-submit { background: linear-gradient(135deg, #ec4899, #6366f1); color: #fff; }
-    .reservation-status-section { margin-top: 20px; padding: 16px; background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0; }
-    .reservation-status-section h3 { margin: 0 0 10px; font-size: 1rem; }
-    .reservation-status-list { display: flex; flex-direction: column; gap: 10px; }
-    .reservation-status-item {
-      display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;
-      padding: 10px 12px; background: #fff; border-radius: 10px; border: 1px solid #e5e7eb;
+
+    .reserve-modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 20px;
     }
-    .reservation-status-item .status-badge { padding: 4px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 700; }
-    .reservation-status-item .status-badge.pending { background: #fef3c7; color: #92400e; }
-    .reservation-status-item .status-badge.confirmed { background: #d1fae5; color: #047857; }
-    .reservation-status-item .status-badge.cancelled { background: #fee2e2; color: #b91c1c; }
+
+    .reserve-modal-actions button {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+    }
+
+    .reserve-modal-actions .btn-cancel {
+      background: #f3f4f6;
+      color: #374151;
+    }
+
+    .reserve-modal-actions .btn-submit {
+      background: linear-gradient(135deg, #ec4899, #6366f1);
+      color: #fff;
+    }
+
+    .reservation-status-section {
+      margin-top: 20px;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 12px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .reservation-status-section h3 {
+      margin: 0 0 10px;
+      font-size: 1rem;
+    }
+
+    .reservation-status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .reservation-status-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 10px 12px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e5e7eb;
+    }
+
+    .reservation-status-item .status-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    .reservation-status-item .status-badge.pending {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .reservation-status-item .status-badge.confirmed {
+      background: #d1fae5;
+      color: #047857;
+    }
+
+    .reservation-status-item .status-badge.cancelled {
+      background: #fee2e2;
+      color: #b91c1c;
+    }
   </style>
 </head>
+
 <body>
   <header class="topbar">
     <div class="brand">
@@ -334,7 +457,8 @@
           <h3>Your reservation status</h3>
           <p class="sub-text" style="margin:0 0 10px; font-size:0.85rem;">Real-time status from the store</p>
           <div id="reservationStatusList" class="reservation-status-list"></div>
-          <button type="button" id="refreshReservationStatus" class="btn-secondary" style="margin-top:10px; font-size:0.85rem;">Refresh status</button>
+          <button type="button" id="refreshReservationStatus" class="btn-secondary"
+            style="margin-top:10px; font-size:0.85rem;">Refresh status</button>
         </div>
         <div class="detail-section">
           <h2>Product Description</h2>
@@ -361,7 +485,8 @@
             <span class="star" data-value="5">★</span>
           </div>
           <textarea id="productReviewComment" placeholder="Share your thoughts about this product…"></textarea>
-          <button type="submit" class="btn-primary" style="width:auto; align-self:flex-start; padding-inline:16px; font-size:0.9rem;">Submit review</button>
+          <button type="submit" class="btn-primary"
+            style="width:auto; align-self:flex-start; padding-inline:16px; font-size:0.9rem;">Submit review</button>
         </form>
       </div>
 
@@ -378,7 +503,9 @@
             <span class="star" data-value="5">★</span>
           </div>
           <textarea id="storeReviewComment" placeholder="How was your experience with this store?"></textarea>
-          <button type="submit" class="btn-primary" style="width:auto; align-self:flex-start; padding-inline:16px; font-size:0.9rem;">Submit store review</button>
+          <button type="submit" class="btn-primary"
+            style="width:auto; align-self:flex-start; padding-inline:16px; font-size:0.9rem;">Submit store
+            review</button>
         </form>
       </div>
     </aside>
@@ -520,7 +647,7 @@
 
         const img = document.getElementById('productImage');
         img.src = product.images || '';
-        img.onerror = function() {
+        img.onerror = function () {
           this.src = 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 200 200%22><rect fill=%22%23eee%22 width=%22200%22 height=%22200%22/><text x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%23999%22>No image</text></svg>';
         };
 
@@ -832,7 +959,7 @@
     document.getElementById('storeReviewForm').addEventListener('submit', submitStoreReview);
     document.getElementById('reserveModalCancel').addEventListener('click', closeReserveModal);
     document.getElementById('reserveModalSubmit').addEventListener('click', submitReserveWithDateTime);
-    document.getElementById('reserveModal').addEventListener('click', function(e) {
+    document.getElementById('reserveModal').addEventListener('click', function (e) {
       if (e.target.id === 'reserveModal') closeReserveModal();
     });
     document.getElementById('refreshReservationStatus').addEventListener('click', loadReservationStatus);
@@ -843,5 +970,5 @@
     loadProductDetail();
   </script>
 </body>
-</html>
 
+</html>
