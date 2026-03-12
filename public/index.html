@@ -6,6 +6,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Grazers | Home</title>
   <link rel="stylesheet" href="home.css" />
+  <style>
+    /* Owner view hides extraneous UI */
+    body.owner-view .topIcons,
+    body.owner-view .hero,
+    body.owner-view .sidebar,
+    body.owner-view #browse-by-shop,
+    body.owner-view #searchForm,
+    body.owner-view .filterBar,
+    body.owner-view #featuredStrip,
+    body.owner-view #browse-products h2,
+    body.owner-view #browse-products .subText,
+    body.owner-view .sectionLabel {
+      display: none !important;
+    }
+
+    body.owner-view .layout {
+      grid-template-columns: 1fr !important;
+    }
+  </style>
+  <script>
+    if (window.location.search.includes('ownerview=1')) {
+      window.addEventListener('DOMContentLoaded', () => {
+        document.body.classList.add('owner-view');
+      });
+    }
+  </script>
 </head>
 
 <body>
@@ -116,14 +142,15 @@
         <div class="sideRow">
           <span id="cartCount">0 Items</span>
         </div>
-        <button class="sideBtn" type="button">Go to Cart</button>
+        <a href="/cart.html" class="sideBtn sideBtnLink">Go to Cart</a>
       </div>
     </aside>
   </main>
 
   <script>
-    // Home page client logic: auth state, product listing, favourites, search and loyalty actions
+    // Home page client logic: auth state, product listing, favourites, search, cart, and loyalty actions
     let favoriteIds = [];
+    let cartIds = [];
 
     // Check auth status and update header UI based on the current session
     async function checkAuth() {
@@ -138,12 +165,14 @@
 
         if (data.isLoggedIn) {
           if (signInLink) signInLink.style.display = 'none';
-          if (signUpBtn) signUpBtn.style.display = 'none';
+          document.getElementById('profileLink').style.display = 'inline-flex';
+          document.getElementById('signUpBtn').style.display = 'none';
           userName.textContent = data.userName || 'User';
           userInfo.style.display = 'inline';
           const pl = document.getElementById('profileLink');
           if (pl) pl.style.display = 'inline-flex';
           await loadFavorites();
+          await loadCart();
         } else {
           if (signInLink) signInLink.style.display = 'inline';
           if (signUpBtn) signUpBtn.style.display = 'inline';
@@ -151,10 +180,28 @@
           const pl = document.getElementById('profileLink');
           if (pl) pl.style.display = 'none';
           updateFavCount(0);
+          updateCartCount(0);
         }
       } catch (error) {
         console.error('Error checking auth:', error);
       }
+    }
+
+    async function loadCart() {
+      try {
+        const res = await fetch('/api/cart');
+        if (res.status === 401) return;
+        const products = await res.json();
+        cartIds = products.map(p => p.id) || [];
+        updateCartCount(cartIds.length);
+      } catch (e) {
+        console.error('Load cart error:', e);
+      }
+    }
+
+    function updateCartCount(n) {
+      const el = document.getElementById('cartCount');
+      if (el) el.textContent = n + ' Item' + (n !== 1 ? 's' : '');
     }
 
     async function loadFavorites() {
@@ -198,7 +245,7 @@
             </div>
           </div>
           <div class="productCardActions">
-            <button type="button" class="productBtn reserveBtn" data-price="${item.price}" data-product-id="${id}">Reserve</button>
+            <button type="button" class="productBtn reserveBtn" data-price="${item.price}" data-product-id="${id}">Add to Cart</button>
           </div>
         </div>
       `;
@@ -365,39 +412,35 @@
       }
     });
 
-    // Reserve an item via centralized reservation API (also updates loyalty points)
+    // Add object to cart instead of outright reversing it
     document.addEventListener('click', async function (e) {
       const btn = e.target.closest('.reserveBtn');
       if (!btn) return;
       const productId = btn.dataset.productId;
-      const price = parseFloat(btn.dataset.price);
+      if (btn.disabled) return;
+
       try {
-        const res = await fetch('/api/reservations', {
+        const res = await fetch('/api/cart', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ productId, quantity: 1 })
+          body: JSON.stringify({ productId })
         });
         if (res.status === 401) {
-          alert('Please sign in to reserve and earn points.');
+          showCustomNotification('Sign In Required', 'Please sign in to add to cart.', 'error');
           return;
         }
         const data = await res.json();
         if (!res.ok) {
-          if (typeof data.inventoryLeft === 'number' && data.inventoryLeft === 0) {
-            btn.disabled = true;
-            btn.textContent = 'Out of stock';
-          }
-          alert(data.error || 'Could not reserve this item.');
+          showCustomNotification('Cart Error', data.error || 'Could not add to cart.', 'error');
           return;
         }
-        if (typeof data.inventoryLeft === 'number' && data.inventoryLeft === 0) {
-          btn.disabled = true;
-          btn.textContent = 'Out of stock';
-        }
-        alert('Reserved! You will earn loyalty points when the store confirms your purchase.');
+
+        cartIds = data.cartIds || [];
+        updateCartCount(cartIds.length);
+        showCustomNotification('Added to Cart', 'Product has been added to your cart for try-on.', 'success');
       } catch (err) {
-        console.error('Reserve error:', err);
-        alert('Error while reserving item.');
+        console.error('Add to cart error:', err);
+        showCustomNotification('Error', 'Error adding item to cart.', 'error');
       }
     });
 
@@ -473,6 +516,7 @@
       loadShops();
     })();
   </script>
+  <script src="notifications.js"></script>
 </body>
 
 </html>

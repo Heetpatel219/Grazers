@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profile | Grazers</title>
   <link rel="stylesheet" href="home.css" />
   <link rel="stylesheet" href="profile.css" />
+  <link rel="stylesheet" href="notifications.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 </head>
+
 <body>
 
   <header class="topbar">
@@ -66,7 +69,8 @@
         <h2><span class="savedIcon">📅</span> My reservations</h2>
         <button type="button" class="savedViewAll" id="refreshReservationsBtn">Refresh status</button>
       </div>
-      <p class="subText" style="margin:0 0 10px;">Real-time status: see if the store has confirmed your try-on booking.</p>
+      <p class="subText" style="margin:0 0 10px;">Real-time status: see if the store has confirmed your try-on booking.
+      </p>
       <div class="savedScroll" id="myReservationsList">
         <p class="loadingText" id="reservationsLoading">Loading…</p>
       </div>
@@ -180,10 +184,16 @@
           const t = r.preferredTime || '—';
           const status = (r.status || 'pending').toLowerCase();
           const statusClass = status === 'confirmed' ? 'confirmed' : status === 'cancelled' ? 'cancelled' : 'pending';
+
+          let productList = r.productTitle || 'Item';
+          if (r.items && r.items.length > 0) {
+            productList = r.items.map(i => i.productTitle).join(', ');
+          }
+
           return `
             <div class="reservationCard" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; padding:14px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:10px;">
               <div>
-                <strong>${r.productTitle || 'Item'}</strong><br>
+                <strong style="max-height: 40px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${productList}</strong><br>
                 <span style="font-size:0.9rem; color:#64748b;">${r.store_name || 'Store'} · Visit: ${d} at ${t}</span>
               </div>
               <span class="reservationStatus ${statusClass}" style="padding:6px 12px; border-radius:999px; font-size:0.8rem; font-weight:700; background:${statusClass === 'confirmed' ? '#d1fae5' : statusClass === 'cancelled' ? '#fee2e2' : '#fef3c7'}; color:${statusClass === 'confirmed' ? '#047857' : statusClass === 'cancelled' ? '#b91c1c' : '#92400e'};">${(r.status || 'pending').toUpperCase()}</span>
@@ -273,12 +283,12 @@
           profile.loyaltyPoints = data.points;
           renderProfile();
           document.getElementById('redeemModal').classList.remove('open');
-          alert('Reward redeemed successfully!');
+          showCustomNotification('Success!', 'Reward redeemed successfully!', 'success');
         } else {
-          alert(data.error || 'Could not redeem');
+          showCustomNotification('Error', data.error || 'Could not redeem', 'error');
         }
       } catch (e) {
-        alert('Error redeeming');
+        showCustomNotification('Error', 'Error redeeming', 'error');
       }
     }
 
@@ -291,8 +301,9 @@
     document.getElementById('refreshReservationsBtn').addEventListener('click', loadMyReservations);
 
     loadProfile();
-    loadRewards();
     loadMyReservations();
   </script>
+  <script src="notifications.js"></script>
 </body>
+
 </html>

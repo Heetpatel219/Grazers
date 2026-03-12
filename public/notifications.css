@@ -1,0 +1,86 @@
+/* Custom Notifications Styles */
+.custom-notification-container {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9999;
+    pointer-events: none;
+    /* Let clicks pass through the container */
+}
+
+.custom-notification {
+    background: white;
+    border-left: 4px solid #10b981;
+    /* Default success green */
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 16px 20px;
+    width: 320px;
+    max-width: calc(100vw - 40px);
+    pointer-events: auto;
+    /* Enable clicks on the notification itself */
+    cursor: pointer;
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    opacity: 0;
+    transform: translateX(100%);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-notification.show {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.custom-notification.type-error {
+    border-left-color: #ef4444;
+    /* Error red */
+}
+
+.custom-notification.type-info {
+    border-left-color: #3b82f6;
+    /* Info blue */
+}
+
+.custom-notification.type-sale {
+    border-left-color: #ec4899;
+    /* Sale pink */
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.1) 0%, rgba(99, 102, 241, 0.1) 100%);
+}
+
+.custom-notification-title {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #111827;
+    margin: 0;
+}
+
+.custom-notification-message {
+    font-size: 0.85rem;
+    color: #4b5563;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.custom-notification-close {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.custom-notification-close:hover {
+    color: #4b5563;
+}

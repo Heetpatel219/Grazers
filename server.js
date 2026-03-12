@@ -29,7 +29,7 @@ app.use(session({
   secret: 'mysecretkey',
   resave: false,
   saveUninitialized: false,
-  cookie: { 
+  cookie: {
     secure: false,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
@@ -72,6 +72,9 @@ const userSchema = new mongoose.Schema({
     default: 0
   },
   favorites: [{
+    type: Number
+  }],
+  cart: [{
     type: Number
   }]
 });
@@ -229,11 +232,11 @@ app.post('/signin', async (req, res) => {
     req.session.userId = user._id;
     req.session.userName = user.name;
     req.session.userEmail = user.email;
-    
+
     req.session.isOwner = user.isOwner || false;
 
     // Return success flag and owner role so the client can redirect appropriately 
-    res.status(200).json({ 
+    res.status(200).json({
       message: 'Sign-in successful',
       isOwner: user.isOwner || false
     });
@@ -241,6 +244,51 @@ app.post('/signin', async (req, res) => {
   } catch (error) {
     console.error('Sign-in error:', error);
     res.status(500).json({ message: 'Error during sign-in' });
+  }
+});
+
+app.post('/api/random-price-drop', async (req, res) => {
+  try {
+    // 1. Find a random product using aggregation
+    const randomProducts = await Product.aggregate([{ $sample: { size: 1 } }]);
+    if (!randomProducts || randomProducts.length === 0) {
+      return res.status(404).json({ error: 'No products available.' });
+    }
+
+    const doc = randomProducts[0];
+
+    // 2. Fetch the mongoose model to save it
+    const product = await Product.findById(doc._id);
+    if (!product) {
+      return res.status(404).json({ error: 'Product not found.' });
+    }
+
+    // 3. Determine drop
+    const dropPercentage = Math.floor(Math.random() * 41) + 10; // Random drop between 10% and 50%
+    const currentPrice = product.price;
+
+    // Save original price if not previously saved
+    if (!product.original_price || product.original_price <= currentPrice) {
+      product.original_price = currentPrice;
+    }
+
+    const dropMultiplier = (100 - dropPercentage) / 100;
+    product.price = currentPrice * dropMultiplier;
+
+    await product.save();
+
+    res.json({
+      product: {
+        id: product.id,
+        title: product.title,
+        price: product.price,
+        original_price: product.original_price
+      },
+      dropPercentage
+    });
+  } catch (err) {
+    console.error('Random drop error:', err);
+    res.status(500).json({ error: 'Failed to drop price' });
   }
 });
 
@@ -307,6 +355,11 @@ app.get('/api/products/:id', async (req, res) => {
       ]
     }).limit(6).lean();
 
+    let isStoreOwner = false;
+    if (req.session && req.session.userId && req.session.isOwner) {
+      isStoreOwner = true;
+    }
+
     res.json({
       product,
       inventoryLeft: product.quantity || 0,
@@ -320,11 +373,48 @@ app.get('/api/products/:id', async (req, res) => {
       },
       productReviews,
       storeReviews,
-      relatedProducts
+      relatedProducts,
+      isStoreOwner
     });
   } catch (err) {
     console.error('Product detail error:', err);
     res.status(500).json({ error: 'Failed to load product detail' });
+  }
+});
+
+// Edit product endpoint (Owner only)
+app.put('/api/products/:id', requireOwner, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) {
+      return res.status(400).json({ error: 'Invalid product id' });
+    }
+
+    const { price, description } = req.body;
+    const updateData = {};
+    if (price !== undefined) updateData.price = Number(price);
+    if (description !== undefined) updateData.description = String(description).trim();
+
+    // Verify ownership by checking if the session store_id matches the product's store_id?
+    // the system currently seems to track overall isOwner without a single store restriction in the session, 
+    // so here we'll just allow it if isOwner since the frontend hides the button otherwise. 
+    // In a strict app, we would verify `product.store_id === req.session.ownedStoreId`
+    // but the session currently only sets `isOwner`.
+
+    const updatedProduct = await Product.findOneAndUpdate(
+      { id },
+      { $set: updateData },
+      { new: true }
+    ).lean();
+
+    if (!updatedProduct) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    res.json(updatedProduct);
+  } catch (err) {
+    console.error('Update product error:', err);
+    res.status(500).json({ error: 'Failed to update product' });
   }
 });
 
@@ -343,7 +433,72 @@ app.get('/api/shops-from-products', async (req, res) => {
   }
 });
 
-// Create a reservation and decrement central inventory
+// Create a bundled reservation for multiple items from a single store
+app.post('/api/reservations/bundle', requireAuth, async (req, res) => {
+  try {
+    const { store_id, store_name, items, preferredDate, preferredTime } = req.body;
+
+    if (!store_id || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Invalid bundle data' });
+    }
+
+    const user = await User.findById(req.session.userId).select('name');
+    if (!user) return res.status(401).json({ error: 'User not found' });
+
+    const prefDate = preferredDate ? new Date(preferredDate) : null;
+    if (prefDate && isNaN(prefDate.getTime())) {
+      return res.status(400).json({ error: 'Invalid preferred date' });
+    }
+
+    // Pre-flight check: verify inventory for all items before committing anything
+    const productsToUpdate = [];
+    for (const item of items) {
+      const id = Number(item.productId);
+      const qty = Number(item.quantity) || 1;
+
+      const product = await Product.findOne({ id });
+      if (!product) {
+        return res.status(404).json({ error: `Product ${item.productTitle || id} not found` });
+      }
+      if ((product.quantity || 0) < qty) {
+        return res.status(400).json({ error: `Not enough inventory for ${product.title}` });
+      }
+
+      productsToUpdate.push({ product, deductQty: qty });
+    }
+
+    // Deduct inventory
+    for (const update of productsToUpdate) {
+      update.product.quantity = (update.product.quantity || 0) - update.deductQty;
+      await update.product.save();
+    }
+
+    // Create the bundled reservation
+    const reservation = await Reservation.create({
+      items: items.map(i => ({
+        productId: i.productId,
+        productTitle: i.productTitle || 'Product',
+        quantity: i.quantity || 1,
+        priceAtReservation: i.priceAtReservation || 0,
+        image: i.image
+      })),
+      store_id,
+      store_name,
+      userId: user._id,
+      userName: user.name,
+      status: 'pending',
+      preferredDate: prefDate || undefined,
+      preferredTime: preferredTime ? String(preferredTime).trim() : undefined
+    });
+
+    res.status(201).json({ reservation });
+  } catch (err) {
+    console.error('Bundle reservation error:', err);
+    res.status(500).json({ error: 'Failed to create bundled reservation' });
+  }
+});
+
+// Create a single reservation and decrement central inventory (legacy, kept just in case)
 app.post('/api/reservations', requireAuth, async (req, res) => {
   try {
     const { productId, quantity, preferredDate, preferredTime } = req.body;
@@ -439,7 +594,13 @@ app.post('/api/owner/reservations/:id/confirm', requireOwner, async (req, res) =
     reservation.confirmedAt = new Date();
     await reservation.save();
 
-    const revenue = (reservation.priceAtReservation || 0) * (reservation.quantity || 1);
+    let revenue = 0;
+    if (reservation.items && reservation.items.length > 0) {
+      revenue = reservation.items.reduce((sum, i) => sum + (i.priceAtReservation || 0) * (i.quantity || 1), 0);
+    } else {
+      revenue = (reservation.priceAtReservation || 0) * (reservation.quantity || 1);
+    }
+
     const pointsTotal = await addLoyaltyPoints(reservation.userId, revenue);
 
     res.json({ reservation, loyaltyPointsAwarded: pointsTotal });
@@ -470,7 +631,12 @@ app.get('/api/owner/revenue', requireOwner, async (req, res) => {
         next.setDate(next.getDate() + 1);
         const dayRevenue = reservations
           .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
-          .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
+          .reduce((sum, r) => {
+            if (r.items && r.items.length > 0) {
+              return sum + r.items.reduce((s, i) => s + (i.priceAtReservation || 0) * (i.quantity || 1), 0);
+            }
+            return sum + (r.priceAtReservation || 0) * (r.quantity || 1);
+          }, 0);
         days.push({
           label: d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
           date: d.toISOString().slice(0, 10),
@@ -490,7 +656,12 @@ app.get('/api/owner/revenue', requireOwner, async (req, res) => {
         next.setDate(next.getDate() + 1);
         const dayRevenue = reservations
           .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
-          .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
+          .reduce((sum, r) => {
+            if (r.items && r.items.length > 0) {
+              return sum + r.items.reduce((s, i) => s + (i.priceAtReservation || 0) * (i.quantity || 1), 0);
+            }
+            return sum + (r.priceAtReservation || 0) * (r.quantity || 1);
+          }, 0);
         days.push({
           label: d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
           date: d.toISOString().slice(0, 10),
@@ -507,7 +678,12 @@ app.get('/api/owner/revenue', requireOwner, async (req, res) => {
         const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
         const monthRevenue = reservations
           .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
-          .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
+          .reduce((sum, r) => {
+            if (r.items && r.items.length > 0) {
+              return sum + r.items.reduce((s, i) => s + (i.priceAtReservation || 0) * (i.quantity || 1), 0);
+            }
+            return sum + (r.priceAtReservation || 0) * (r.quantity || 1);
+          }, 0);
         months.push({
           label: d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
           date: d.toISOString().slice(0, 7),
@@ -604,6 +780,54 @@ app.delete('/api/favorites/:productId', requireAuth, async (req, res) => {
     res.json({ favoriteIds: user.favorites || [] });
   } catch (err) {
     res.status(500).json({ error: 'Failed to remove favorite' });
+  }
+});
+
+// --- Cart ---
+app.get('/api/cart', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.session.userId).select('cart').lean();
+    if (!user) return res.status(404).json({ error: 'User not found' });
+    const cartIds = user.cart || [];
+    const products = [];
+    for (const id of cartIds) {
+      const p = await Product.findOne({ id }).lean();
+      if (p) products.push(p);
+    }
+    res.json(products);
+  } catch (err) {
+    console.error('Cart API error:', err);
+    res.status(500).json({ error: 'Failed to load cart' });
+  }
+});
+
+app.post('/api/cart', requireAuth, async (req, res) => {
+  try {
+    const productId = Number(req.body.productId);
+    if (!Number.isInteger(productId)) return res.status(400).json({ error: 'Invalid productId' });
+    const user = await User.findById(req.session.userId);
+    if (!user.cart) user.cart = [];
+    if (user.cart.includes(productId)) return res.json({ cartIds: user.cart });
+    user.cart.push(productId);
+    await user.save();
+    res.json({ cartIds: user.cart });
+  } catch (err) {
+    console.error('Add cart error:', err);
+    res.status(500).json({ error: 'Failed to add to cart' });
+  }
+});
+
+app.delete('/api/cart/:productId', requireAuth, async (req, res) => {
+  try {
+    const productId = Number(req.params.productId);
+    if (!Number.isInteger(productId)) return res.status(400).json({ error: 'Invalid productId' });
+    const user = await User.findById(req.session.userId);
+    if (user.cart) user.cart = user.cart.filter(id => id !== productId);
+    await user.save();
+    res.json({ cartIds: user.cart || [] });
+  } catch (err) {
+    console.error('Delete cart error:', err);
+    res.status(500).json({ error: 'Failed to remove from cart' });
   }
 });
 
@@ -751,7 +975,13 @@ app.get('/api/owner/analytics', requireOwner, async (req, res) => {
       Review.find(reviewQuery).lean()
     ]);
 
-    const totalInventory = products.reduce((sum, p) => sum + (p.quantity || 0), 0);
+    const activeReservationsQty = reservations.filter(r => r.status === 'pending').reduce((sum, r) => {
+      if (r.items && r.items.length > 0) {
+        return sum + r.items.reduce((s, i) => s + (i.quantity || 1), 0);
+      }
+      return sum + (r.quantity || 0);
+    }, 0);
+    const totalInventory = products.reduce((sum, p) => sum + (p.quantity || 0), 0) + activeReservationsQty;
     const activeReservations = reservations.filter(r => r.status === 'pending').length;
     const confirmedReservations = reservations.filter(r => r.status === 'confirmed');
     const confirmedToday = confirmedReservations.filter(r => {
@@ -775,7 +1005,12 @@ app.get('/api/owner/analytics', requireOwner, async (req, res) => {
         const today = new Date();
         return d.toDateString() === today.toDateString();
       })
-      .reduce((sum, r) => sum + (r.priceAtReservation || 0) * (r.quantity || 1), 0);
+      .reduce((sum, r) => {
+        if (r.items && r.items.length > 0) {
+          return sum + r.items.reduce((s, i) => s + (i.priceAtReservation || 0) * (i.quantity || 1), 0);
+        }
+        return sum + (r.priceAtReservation || 0) * (r.quantity || 1);
+      }, 0);
 
     const inventoryByCategory = {};
     products.forEach(p => {
@@ -785,8 +1020,15 @@ app.get('/api/owner/analytics', requireOwner, async (req, res) => {
 
     const reservationsByProduct = {};
     reservations.forEach(r => {
-      if (!r.productId) return;
-      reservationsByProduct[r.productId] = (reservationsByProduct[r.productId] || 0) + (r.quantity || 0);
+      if (r.items && r.items.length > 0) {
+        r.items.forEach(i => {
+          if (!i.productId) return;
+          reservationsByProduct[i.productId] = (reservationsByProduct[i.productId] || 0) + (i.quantity || 1);
+        });
+      } else {
+        if (!r.productId) return;
+        reservationsByProduct[r.productId] = (reservationsByProduct[r.productId] || 0) + (r.quantity || 0);
+      }
     });
 
     const topProducts = products

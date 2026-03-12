@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - Grazers</title>
+    <link rel="stylesheet" href="home.css">
+    <link rel="stylesheet" href="notifications.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        .cart-container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .store-group {
+            background: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.08);
+            border: 1px solid #e5e7eb;
+        }
+
+        .store-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f3f4f6;
+        }
+
+        .store-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cart-items {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 16px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+        }
+
+        .cart-item:last-child {
+            border-bottom: none;
+        }
+
+        .cart-item-img {
+            width: 80px;
+            height: 80px;
+            border-radius: 12px;
+            object-fit: cover;
+            background: #f9fafb;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+
+        .cart-item-details {
+            flex: 1;
+        }
+
+        .cart-item-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0 0 4px;
+        }
+
+        .cart-item-price {
+            font-size: 1rem;
+            color: #059669;
+            font-weight: 600;
+            margin: 0 0 8px;
+        }
+
+        .remove-btn {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+            border: none;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .remove-btn:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .store-actions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .btn-reserve-bundle {
+            background: linear-gradient(135deg, #ec4899, #6366f1);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 999px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+
+        .btn-reserve-bundle:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(236, 72, 153, 0.4);
+        }
+
+        .empty-cart {
+            text-align: center;
+            padding: 80px 20px;
+            color: #6b7280;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
+        }
+
+        .empty-cart a {
+            color: #ec4899;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 10px;
+            padding: 10px 20px;
+            background: #fdf2f8;
+            border-radius: 999px;
+            transition: background 0.2s;
+        }
+
+        .empty-cart a:hover {
+            background: #fce7f3;
+        }
+
+        /* Modal CSS */
+        .reserve-modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.6);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .reserve-modal-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .reserve-modal {
+            background: #fff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: translateY(20px);
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reserve-modal-overlay.open .reserve-modal {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .reserve-modal h3 {
+            margin: 0 0 8px;
+            font-size: 1.4rem;
+            color: #111827;
+        }
+
+        .reserve-modal label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #374151;
+            margin-top: 16px;
+        }
+
+        .reserve-modal input,
+        .reserve-modal select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+            background: #f9fafb;
+            transition: border-color 0.2s;
+        }
+
+        .reserve-modal input:focus,
+        .reserve-modal select:focus {
+            outline: none;
+            border-color: #ec4899;
+            background: #fff;
+        }
+
+        .reserve-modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .reserve-modal-actions button {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 1rem;
+            transition: background 0.2s;
+        }
+
+        .reserve-modal-actions .btn-cancel {
+            background: #f3f4f6;
+            color: #4b5563;
+        }
+
+        .reserve-modal-actions .btn-cancel:hover {
+            background: #e5e7eb;
+        }
+
+        .reserve-modal-actions .btn-submit {
+            background: linear-gradient(135deg, #ec4899, #6366f1);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+        }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="brand">
+            <a href="/" class="brandLink" style="text-decoration:none; display:flex; align-items:center; gap:12px;">
+                <div class="brandIcon">G</div>
+                <div class="brandText">
+                    <div class="brandName">Grazers</div>
+                    <div class="brandTag">FASHION COLLECTION</div>
+                </div>
+            </a>
+        </div>
+        <div class="searchWrap" style="visibility:hidden;">
+            <input class="searchInput" type="text" disabled />
+        </div>
+        <div class="topIcons">
+            <a class="topLink" href="/">Home</a>
+            <span id="userInfo" style="display: none;">
+                <span id="userName"></span>
+                <a class="topLink" href="#" onclick="logout(event)">Sign Out</a>
+            </span>
+            <a class="iconBubble profileLink" href="/profile" id="profileLink" style="display: none;">User Profile</a>
+        </div>
+    </header>
+
+    <main class="cart-container" id="cartContainer">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 30px;">
+            <h1 style="font-size: 2.2rem; color: #111827; margin: 0; font-weight: 700;">Your Cart</h1>
+        </div>
+        <div id="cartContent">
+            <div class="empty-cart">Loading cart...</div>
+        </div>
+    </main>
+
+    <!-- Reservation Date/Time Modal for Checkouts -->
+    <div class="reserve-modal-overlay" id="reserveModal">
+        <div class="reserve-modal">
+            <h3 id="reserveModalTitle">Choose visit date & time</h3>
+            <p style="font-size:0.9rem; color:#6b7280; margin-bottom:12px;">You are reserving items for try-on from this
+                store.</p>
+            <label for="reserveDate">Date</label>
+            <input type="date" id="reserveDate" min="">
+            <label for="reserveTime">Time</label>
+            <select id="reserveTime">
+                <option value="9:00 AM">9:00 AM</option>
+                <option value="10:00 AM">10:00 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="12:00 PM">12:00 PM</option>
+                <option value="1:00 PM">1:00 PM</option>
+                <option value="2:00 PM">2:00 PM</option>
+                <option value="3:00 PM">3:00 PM</option>
+                <option value="4:00 PM">4:00 PM</option>
+                <option value="5:00 PM">5:00 PM</option>
+                <option value="6:00 PM">6:00 PM</option>
+            </select>
+            <div class="reserve-modal-actions">
+                <button type="button" class="btn-cancel" id="reserveModalCancel">Cancel</button>
+                <button type="button" class="btn-submit" id="reserveModalSubmit">Confirm Reservation</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="notifications.js"></script>
+    <script src="cart.js"></script>
+    <script>
+        // Basic auth check to show profile options
+        fetch('/api/check-auth').then(r => r.json()).then(data => {
+            if (data.isLoggedIn) {
+                document.getElementById('userInfo').style.display = 'inline';
+                document.getElementById('userName').textContent = data.userName;
+                document.getElementById('profileLink').style.display = 'inline-flex';
+            }
+        });
+        function logout(e) {
+            e.preventDefault();
+            fetch('/api/logout', { method: 'POST' }).then(() => window.location.href = '/');
+        }
+    </script>
+</body>
+
+</html>
