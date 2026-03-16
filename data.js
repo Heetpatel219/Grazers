@@ -14,7 +14,7 @@ const products = [
     "images": "https://img.hollisterco.com/is/image/anf/KIC_352-6037-00382-610_prod1?policy=product-extra-large",
     "price": 29.95,
     "quantity": 25,
-    "description": "Trendy and comfortable tops for women.",
+    "description": "Refresh your wardrobe with women’s tops designed for a flattering fit and all-day comfort—easy to style, easy to love.",
     "is_featured": true,
     "is_best_seller": false,
     "__v": 0
@@ -30,7 +30,7 @@ const products = [
     "images": "https://img.hollisterco.com/is/image/anf/KIC_324-6080-00476-210_prod1?policy=product-large",
     "price": 34.95,
     "quantity": 18,
-    "description": "Stylish men's casual shirts and tees.",
+    "description": "Upgrade your everyday rotation with men’s tees and casual shirts—clean, versatile styles with a comfortable feel.",
     "is_featured": false,
     "is_best_seller": true,
     "__v": 0
@@ -46,7 +46,7 @@ const products = [
     "images": "https://img.hollisterco.com/is/image/anf/KIC_347-6055-00357-610_prod1?policy=product-extra-large",
     "price": 49.95,
     "quantity": 15,
-    "description": "Perfect fit jeans and trousers for women.",
+    "description": "Find your perfect fit with women’s jeans and trousers—comfortable, confidence-boosting styles made to wear on repeat.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -62,7 +62,7 @@ const products = [
     "images": "https://img.hollisterco.com/is/image/anf/KIC_313-5013-00090-110_prod1?policy=product-extra-large",
     "price": 54.95,
     "quantity": 20,
-    "description": "Durable and stylish bottoms for men.",
+    "description": "Men’s bottoms built for comfort and durability—classic styles that pair effortlessly with your favourite tops.",
     "is_featured": false,
     "is_best_seller": false,
     "__v": 0
@@ -78,7 +78,7 @@ const products = [
     "images": "https://img.hollisterco.com/is/image/anf/KIC_359-6021-00357-601_prod1?policy=product-large",
     "price": 44.95,
     "quantity": 12,
-    "description": "Elegant lace ruffle dress for special occasions.",
+    "description": "Make a statement with a dressy women’s look featuring a polished, feminine finish—perfect when you want to stand out.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -94,7 +94,7 @@ const products = [
     "images": "https://assets.designerbrands.com/match/Site_Name/897102125_160_ss_01/?quality=85&io=transform:fit,width:1280",
     "price": 39.99,
     "quantity": 30,
-    "description": "Comfortable sneakers for active kids.",
+    "description": "Active kids need comfy shoes—with everyday sneakers that are lightweight, supportive, and ready for nonstop play.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -110,7 +110,7 @@ const products = [
     "images": "https://assets.designerbrands.com/match/Site_Name/199681236_660_ss_05/?quality=85&io=transform:fit,width:1280",
     "price": 65.00,
     "quantity": 10,
-    "description": "High-performance athletic footwear for women.",
+    "description": "Power your training with women’s athletic shoes that deliver support, cushioning, and a secure fit step after step.",
     "is_featured": false,
     "is_best_seller": true,
     "__v": 0
@@ -126,7 +126,7 @@ const products = [
     "images": "https://assets.designerbrands.com/match/Site_Name/112381634_320_ss_01/?quality=85&io=transform:fit,width:1280",
     "price": 85.00,
     "quantity": 8,
-    "description": "Classy heels and flats for evening events.",
+    "description": "Add instant elegance with women’s evening shoes—sleek, stylish options that elevate any outfit.",
     "is_featured": true,
     "is_best_seller": false,
     "__v": 0
@@ -142,7 +142,7 @@ const products = [
     "images": "https://assets.designerbrands.com/match/Site_Name/236112175_110_ss_01/?quality=85&io=transform:fit,width:1280",
     "price": 70.00,
     "quantity": 14,
-    "description": "Versatile sports shoes for gym and outdoor activities.",
+    "description": "Men’s sports shoes made for performance and comfort—great support for training, walking, and daily wear.",
     "is_featured": false,
     "is_best_seller": true,
     "__v": 0
@@ -158,7 +158,7 @@ const products = [
     "images": "https://assets.designerbrands.com/match/Site_Name/214101408_120_ss_01/?quality=85&io=transform:fit,width:1280",
     "price": 95.00,
     "quantity": 5,
-    "description": "Sophisticated leather shoes for formal wear.",
+    "description": "Finish your look with men’s dress shoes featuring a sharp, sophisticated style—ideal for formal outfits.",
     "is_featured": true,
     "is_best_seller": false,
     "__v": 0
@@ -174,7 +174,7 @@ const products = [
     "images": "https://s7d2.scene7.com/is/image/aeo/0751_6358_368_f?$pdp-mdg-opt$&fmt=webp",
     "price": 35.50,
     "quantity": 22,
-    "description": "Stylish one-piece and two-piece swimsuits.",
+    "description": "Feel confident in women’s swimwear with flattering cuts and comfortable coverage—made for pool days and beach getaways.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -190,7 +190,7 @@ const products = [
     "images": "https://img.abercrombie.com/is/image/anf/KIC_133-6054-00246-229_prod1?policy=product-medium",
     "price": 30.00,
     "quantity": 25,
-    "description": "Quick-dry swim trunks for beach and pool.",
+    "description": "Men’s swim trunks with a comfortable fit—built for swimming, lounging, and warm-weather style.",
     "is_featured": false,
     "is_best_seller": false,
     "__v": 0
@@ -206,7 +206,7 @@ const products = [
     "images": "https://assets.aritzia.com/image/upload/c_crop,ar_1920:2623,g_south/q_auto,f_auto,dpr_auto/f25_a06_124704_30193_off_a",
     "price": 45.00,
     "quantity": 40,
-    "description": "Breathable workout gear for gym and yoga.",
+    "description": "Women’s workout wear designed to move with you—breathable, comfortable pieces for training, stretching, and active days.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -222,7 +222,7 @@ const products = [
     "images": "https://img.abercrombie.com/is/image/anf/KIC_116-6007-00096-105_prod1?policy=product-medium",
     "price": 40.00,
     "quantity": 35,
-    "description": "High-quality performance wear for men.",
+    "description": "Men’s performance workout clothes with a comfortable fit—built to handle tough sessions and keep you moving.",
     "is_featured": false,
     "is_best_seller": true,
     "__v": 0
@@ -238,7 +238,7 @@ const products = [
     "images": "https://contents.mediadecathlon.com/p2480641/k$755502e0123e983c81a684ad5f32e6bc/picture.jpg?format=auto",
     "price": 120.00,
     "quantity": 5,
-    "description": "Essential fitness equipment for home workouts.",
+    "description": "Build your home workout setup with essential fitness equipment—great for strength training, conditioning, and daily routines.",
     "is_featured": true,
     "is_best_seller": false,
     "__v": 0
@@ -254,7 +254,7 @@ const products = [
     "images": "https://media.gamestop.com/i/gamestop/20023776/Fallout-New-Vegas-Unisex-Short-Sleeve-Graphic-T-Shirt-GameStop-Exclusive?w=1256&h=664&fmt=auto",
     "price": 19.99,
     "quantity": 50,
-    "description": "Graphic gaming tees for enthusiasts.",
+    "description": "Show off your fandom with bold graphic gaming tees—comfortable, eye-catching styles you’ll want to wear everywhere.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -270,7 +270,7 @@ const products = [
     "images": "https://media.gamestop.com/i/gamestop/20005334?w=1256&h=664&fmt=auto",
     "price": 9.99,
     "quantity": 100,
-    "description": "Fun themed socks for gamers.",
+    "description": "Level up your sock drawer with fun themed designs—soft, comfortable, and perfect for everyday wear.",
     "is_featured": false,
     "is_best_seller": false,
     "__v": 0
@@ -286,7 +286,7 @@ const products = [
     "images": "https://i5.walmartimages.com/asr/a911d271-644d-4b64-803b-9b2d17801583.6498fc301f46b40bb23416a55869737e.jpeg?odnHeight=640&odnWidth=640&odnBg=FFFFFF",
     "price": 15.00,
     "quantity": 20,
-    "description": "Cozy scarfs for winter comfort.",
+    "description": "Stay warm in style with cozy scarves made for comfort—an easy finishing touch for cold-weather outfits.",
     "is_featured": false,
     "is_best_seller": false,
     "__v": 0
@@ -302,7 +302,7 @@ const products = [
     "images": "https://media.gamestop.com/i/gamestop/20014306/Super-Mario-Bros-Mario-Cosplay-Hat?w=1256&h=664&fmt=auto",
     "price": 25.00,
     "quantity": 15,
-    "description": "Iconic cosplay hats for fans.",
+    "description": "Iconic cosplay-inspired hats that turn heads—perfect for fans, costumes, and standout street style.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -318,7 +318,7 @@ const products = [
     "images": "https://media.gamestop.com/i/gamestop/20020060/Super-Mario-Bros-Question-Block-3D-Rubber-Keychain?w=1256&h=664&fmt=auto",
     "price": 12.00,
     "quantity": 60,
-    "description": "Keychains and pins for your collection.",
+    "description": "Collectible gaming accessories like keychains and pins—perfect for customizing bags, keys, and display setups.",
     "is_featured": true,
     "is_best_seller": false,
     "__v": 0
@@ -334,7 +334,7 @@ const products = [
     "images": "https://assets.adidas.com/images/h_2000,f_auto,q_auto,fl_lossy,c_fill,g_auto/f54b24394dfd494d9bab2bdc5d3703e8_9366/Toronto_FC_25-26_Home_Authentic_Jersey_Red_JJ3896_01_laydown.jpg",
     "price": 89.99,
     "quantity": 25,
-    "description": "Authentic team soccer jerseys.",
+    "description": "Authentic-style soccer jersey with a bold team look—perfect for fans who want game-day energy.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -350,7 +350,7 @@ const products = [
     "images": "https://m.media-amazon.com/images/I/81FRZ3d6PdL._AC_UY1000_.jpg",
     "price": 75.00,
     "quantity": 15,
-    "description": "Classic and custom basketball jerseys.",
+    "description": "Basketball jersey with a classic court-inspired style—great for fans, collectors, and sporty streetwear looks.",
     "is_featured": false,
     "is_best_seller": true,
     "__v": 0
@@ -366,7 +366,7 @@ const products = [
     "images": "https://m.media-amazon.com/images/I/81zsV4keQoS._AC_UF894,1000_QL80_.jpg",
     "price": 80.00,
     "quantity": 12,
-    "description": "Vintage and modern baseball gear.",
+    "description": "Baseball jersey with a timeless look—classic style that’s perfect for fans and casual outfits.",
     "is_featured": false,
     "is_best_seller": false,
     "__v": 0
@@ -382,7 +382,7 @@ const products = [
     "images": "https://shop.realsports.ca/cdn/shop/products/YTH-ADI-LF-jersey-front_5d7c12c9-10b9-436f-adfc-ce2161525393.jpg?v=1504126234",
     "price": 110.00,
     "quantity": 10,
-    "description": "Premium ice hockey jerseys.",
+    "description": "Premium hockey jersey with a bold, authentic look—built for true fans and standout team style.",
     "is_featured": true,
     "is_best_seller": false,
     "__v": 0
@@ -398,7 +398,7 @@ const products = [
     "images": "https://www.montrealcricketstore.com/images/thumbs/0009006_team-india-t20-shirt-2022-replica_600.png",
     "price": 65.00,
     "quantity": 18,
-    "description": "Breathable cricket team jerseys.",
+    "description": "Lightweight, breathable cricket jersey designed for comfort—perfect for players and proud supporters.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -414,7 +414,7 @@ const products = [
     "images": "https://i5.walmartimages.com/asr/b88717d8-fdda-4f7b-b4bd-7e3eaf0a2938.dec019aa22b5c280f9e4649cab09f97b.jpeg",
     "price": 14.99,
     "quantity": 45,
-    "description": "Cool and comfy tops for boys.",
+    "description": "Boys’ tops made for comfort and easy style—soft, fun, and ready for everyday wear.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -430,7 +430,7 @@ const products = [
     "images": "https://mdtextile.com/wp-content/uploads/2023/08/MD-TEXTILE-Kids-Short-Pants-100-Cotton-%E2%80%93-Royal-Blue.jpg",
     "price": 18.00,
     "quantity": 40,
-    "description": "Durable pants and shorts for boys.",
+    "description": "Boys’ pants and shorts built to last—durable, comfortable essentials for active days.",
     "is_featured": false,
     "is_best_seller": false,
     "__v": 0
@@ -446,7 +446,7 @@ const products = [
     "images": "https://i5.walmartimages.com/asr/59be4bf2-5c33-4edd-bea1-4d96448c2977.fb827d6a13040fe6cd3d1592fc29bb7b.jpeg?odnHeight=2000&odnWidth=2000&odnBg=FFFFFF",
     "price": 14.99,
     "quantity": 45,
-    "description": "Adorable and soft tops for girls.",
+    "description": "Girls’ tops with a soft feel and cute style—easy to match and made for everyday comfort.",
     "is_featured": true,
     "is_best_seller": true,
     "__v": 0
@@ -462,7 +462,7 @@ const products = [
     "images": "https://assets.theplace.com/image/upload/d_pdp_img_d,f_auto,q_auto/v1/ecom/assets/products/gym/3031244/3031244_32PP.png",
     "price": 18.00,
     "quantity": 38,
-    "description": "Flexible leggings and skirts for girls.",
+    "description": "Girls’ leggings and skirts designed for comfort and movement—easy favourites for any outfit.",
     "is_featured": false,
     "is_best_seller": false,
     "__v": 0
@@ -478,7 +478,7 @@ const products = [
     "images": "https://i5.walmartimages.com/asr/346edeb4-70e0-4e16-bd51-8d1fb0478418.d85ec834a13bc88b211521f1a40ec026.jpeg",
     "price": 12.00,
     "quantity": 25,
-    "description": "Protective and cute hats for children.",
+    "description": "Kids’ hats that look great and feel comfortable—perfect for everyday protection and easy style.",
     "is_featured": false,
     "is_best_seller": true,
     "__v": 0
