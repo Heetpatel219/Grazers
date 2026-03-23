@@ -17,7 +17,8 @@
     body.owner-view #featuredStrip,
     body.owner-view #browse-products h2,
     body.owner-view #browse-products .subText,
-    body.owner-view .sectionLabel {
+    body.owner-view .sectionLabel,
+    body.owner-view .productCardActions {
       display: none !important;
     }
 
@@ -26,12 +27,14 @@
     }
   </style>
   <script>
+
     if (window.location.search.includes('ownerview=1')) {
       window.addEventListener('DOMContentLoaded', () => {
         document.body.classList.add('owner-view');
       });
     }
-  </script>
+  
+</script>
 </head>
 
 <body>
@@ -48,14 +51,10 @@
 
 
     <div class="topIcons">
-      <a class="topLink" id="signInLink" href="/signin" style="display: none;">Sign In</a>
       <span id="userInfo" style="display: none;">
         <span id="userName"></span>
         <a class="topLink" href="#" onclick="logout(event)">Sign Out</a>
       </span>
-
-      <a class="iconBubble" href="#">Notifications</a>
-      <a class="iconBubble" href="#">Settings</a>
       <a class="iconBubble profileLink" href="/profile" id="profileLink" style="display: none;">User Profile</a>
     </div>
   </header>
@@ -71,6 +70,7 @@
 
         <div class="heroBtns">
           <a class="btnPink" id="signUpBtn" href="/signup" style="display: none;">Sign Up Now</a>
+          <a class="btnOutline" id="signInLink" href="/signin" style="display: none;">Sign In</a>
           <a class="btnOutline" href="#browse-products" id="heroBrowseBtn">Browse Products →</a>
         </div>
       </section>
@@ -110,8 +110,13 @@
       </section>
 
       <section class="categorySection" id="browse-by-shop">
-        <h2>Browse by Shop</h2>
-        <p class="subText">Explore products by store</p>
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px;">
+          <div>
+            <h2>Browse by Shop</h2>
+            <p class="subText" style="margin-bottom:0;">Explore products by store</p>
+          </div>
+          <a href="/stores.html" class="btnOutline" style="color: #0b7a58; border-color: #0b7a58; font-weight: bold; background: transparent;">See All Stores →</a>
+        </div>
         <div class="shopGrid" id="shopGrid">
           <p class="loadingText">Loading shops…</p>
         </div>
@@ -148,11 +153,14 @@
   </main>
 
   <script>
-    // Home page client logic: auth state, product listing, favourites, search, cart, and loyalty actions
+
     let favoriteIds = [];
     let cartIds = [];
 
-    // Check auth status and update header UI based on the current session
+    /**
+     * Core Client Function: checkAuth
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function checkAuth() {
       try {
         const response = await fetch('/api/check-auth');
@@ -187,6 +195,10 @@
       }
     }
 
+    /**
+     * Core Client Function: loadCart
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadCart() {
       try {
         const res = await fetch('/api/cart');
@@ -199,11 +211,19 @@
       }
     }
 
+    /**
+     * Core Client Function: updateCartCount
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function updateCartCount(n) {
       const el = document.getElementById('cartCount');
       if (el) el.textContent = n + ' Item' + (n !== 1 ? 's' : '');
     }
 
+    /**
+     * Core Client Function: loadFavorites
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadFavorites() {
       try {
         const res = await fetch('/api/favorites');
@@ -216,11 +236,19 @@
       }
     }
 
+    /**
+     * Core Client Function: updateFavCount
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function updateFavCount(n) {
       const el = document.getElementById('favCount');
       if (el) el.textContent = n + ' Item' + (n !== 1 ? 's' : '');
     }
 
+    /**
+     * Core Client Function: renderProductCard
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function renderProductCard(item, isFav) {
       const cat = (item.category || '').toUpperCase();
       const img = item.images || '';
@@ -251,7 +279,10 @@
       `;
     }
 
-    // Load a small strip of featured products for the hero section
+    /**
+     * Core Client Function: loadFeatured
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadFeatured() {
       const strip = document.getElementById('featuredStrip');
       if (!strip) return;
@@ -272,8 +303,10 @@
       }
     }
 
-    // Load all products, optionally filtered by shop, category or free-text search query
-    // filterOverride can be 'tops', 'bottoms', or 'latest'
+    /**
+     * Core Client Function: loadProducts
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadProducts(searchQ, filterOverride = 'all') {
       const grid = document.getElementById('productGrid');
       if (!grid) return;
@@ -284,7 +317,6 @@
       if (shop) url += 'shop=' + encodeURIComponent(shop) + '&';
       if (q) url += 'q=' + encodeURIComponent(q.trim()) + '&';
 
-      // Map simplified filters to category query assuming server handles "category"
       if (filterOverride !== 'all' && filterOverride !== 'latest') {
         url += 'category=' + encodeURIComponent(filterOverride) + '&';
       }
@@ -296,7 +328,6 @@
         grid.innerHTML = '';
 
         if (filterOverride === 'latest') {
-          // For latest, simply shuffle products to simulate "random" feature pulling
           products = products.sort(() => 0.5 - Math.random());
         }
 
@@ -318,16 +349,13 @@
           grid.insertAdjacentHTML('beforeend', renderProductCard(item, favoriteIds.includes(item.id)));
         });
 
-        if ((shop || q || filterOverride !== 'all') && window.location.hash === '#browse-products') {
-          // do not scroll immediately on filter click to avoid jarring UX
-        }
+        if ((shop || q || filterOverride !== 'all') && window.location.hash === '#browse-products') {}
       } catch (err) {
         console.error('Failed to load products:', err);
         grid.innerHTML = '<p class="emptyHint">Error loading products.</p>';
       }
     }
 
-    // Handle Live Filters
     document.addEventListener('click', function (e) {
       if (e.target.classList.contains('filterBtn')) {
         const filterBtns = document.querySelectorAll('.filterBtn');
@@ -335,13 +363,15 @@
         e.target.classList.add('active');
 
         const filterType = e.target.getAttribute('data-filter');
-        // Retrieve current search string to combine with filter
         const currentSearch = document.getElementById('searchBar').value.trim();
         loadProducts(currentSearch, filterType);
       }
     });
 
-    // Load shops derived from the Product collection so "Browse by Shop" stays in sync with inventory
+    /**
+     * Core Client Function: loadShops
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadShops() {
       const grid = document.getElementById('shopGrid');
       if (!grid) return;
@@ -356,14 +386,22 @@
         shops.forEach(shop => {
           const name = shop.name || 'Shop';
           const count = shop.productCount || 0;
+          const todayIndex = new Date().getDay() === 0 ? 'sunday' : ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'][new Date().getDay()];
+          const todayHours = (shop.hours && shop.hours[todayIndex]) ? shop.hours[todayIndex] : '9:00 AM - 9:00 PM';
+          const imageSrc = shop.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=600&q=80';
+          const desc = shop.description || `Welcome to ${name}`;
+          
           grid.insertAdjacentHTML('beforeend', `
-            <a href="/?shop=${encodeURIComponent(name)}#browse-products" class="shopCard">
-              <div class="shopCardIcon">${name.charAt(0).toUpperCase()}</div>
-              <div class="shopCardInfo">
-                <strong>${name}</strong>
-                <span>${count} product${count !== 1 ? 's' : ''}</span>
+            <a href="/store.html?store_id=${encodeURIComponent(shop.store_id || name)}" class="shopCard">
+              <img src="${imageSrc}" class="shopCardImage" alt="${name}" loading="lazy">
+              <div class="shopCardContent">
+                <div class="shopCardHeader">
+                  <strong>${name}</strong>
+                  <span>${count} items</span>
+                </div>
+                <div class="shopCardDesc">${desc}</div>
+                <div class="shopCardHours">Open Today: ${todayHours}</div>
               </div>
-              <span class="shopCardArrow">→</span>
             </a>
           `);
         });
@@ -373,7 +411,6 @@
       }
     }
 
-    // Toggle a product as favourite for the current user (delegated click handler)
     document.addEventListener('click', async function (e) {
       const favBtn = e.target.closest('.productFavBtn');
       if (!favBtn) return;
@@ -412,7 +449,6 @@
       }
     });
 
-    // Add object to cart instead of outright reversing it
     document.addEventListener('click', async function (e) {
       const btn = e.target.closest('.reserveBtn');
       if (!btn) return;
@@ -444,7 +480,6 @@
       }
     });
 
-    // Search: submit handler and debounced input for a smoother UX
     let searchDebounce;
     document.getElementById('searchForm').addEventListener('submit', function (e) {
       e.preventDefault();
@@ -484,7 +519,6 @@
       }, 400);
     });
 
-    // Click through to product detail page when clicking on card (excluding buttons)
     document.addEventListener('click', function (e) {
       const clickable = e.target.closest('.productCardClickable');
       if (!clickable) return;
@@ -497,7 +531,10 @@
       }
     });
 
-    // Logout helper used by header link
+    /**
+     * Core Client Function: logout
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function logout(e) {
       e.preventDefault();
       try {
@@ -508,14 +545,14 @@
       }
     }
 
-    // Initial Load
     (async function init() {
       await checkAuth();
       loadFeatured();
       loadProducts();
       loadShops();
     })();
-  </script>
+  
+</script>
   <script src="notifications.js"></script>
 </body>
 

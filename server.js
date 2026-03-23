@@ -8,23 +8,17 @@ const Shop = require('./models/Shop');
 const ReservationModel = require('./models/Reservation');
 const ReviewModel = require('./models/Review');
 const Category = require('./models/Category');
-const ProductModel = require('./models/Product');
-
-// Separate connection for the Grazers catalog database (product inventory)
+const ProductModel = require('./models/Product');
 const grazersConn = mongoose.createConnection('mongodb://127.0.0.1:27017/Grazers');
 const Product = grazersConn.model('Product', ProductModel.schema);
 const Reservation = grazersConn.model('Reservation', ReservationModel.schema);
 const Review = grazersConn.model('Review', ReviewModel.schema);
 
 const app = express();
-const PORT = 3000;
-
-// Core Express middleware for parsing requests and serving static assets
+const PORT = 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
-app.use(express.static('public'));
-
-// Session middleware for tracking logged-in users
+app.use(express.static('public'));
 app.use(session({
   secret: 'mysecretkey',
   resave: false,
@@ -33,14 +27,33 @@ app.use(session({
     secure: false,
     maxAge: 24 * 60 * 60 * 1000 // 24 hours
   }
-}));
-
-// Primary MongoDB connection for user accounts and owner data
+}));
+/**
+ * Formally establishes MongoDB persistence channels ensuring robust state networking.
+ */
 mongoose.connect('mongodb://127.0.0.1:27017/Users')
-  .then(() => console.log("Success: Connected to Local MongoDB"))
-  .catch(err => console.error("Local connection error:", err));
+  .then(async () => {
+    console.log("Success: Connected to Local MongoDB");
 
-// User Schema: customers and store owners share the same collection
+    try {
+      const discountedProducts = await Product.find({ original_price: { $exists: true } });
+      let resetCount = 0;
+      for (const p of discountedProducts) {
+        if (p.original_price > p.price) {
+          p.price = p.original_price;
+          await p.save();
+          resetCount++;
+        }
+      }
+      if (resetCount > 0) {
+        console.log(`[Revert] Automatically reset ${resetCount} items from their flash sales!`);
+      }
+    } catch (e) {
+      console.error('Error resetting prices on startup:', e);
+    }
+
+  })
+  .catch(err => console.error("Local connection error:", err));
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -79,23 +92,17 @@ const userSchema = new mongoose.Schema({
   }]
 });
 
-const User = mongoose.model('User', userSchema);
-
-// Require login for protected routes (HTML redirects; API responds with 401)
+const User = mongoose.model('User', userSchema);
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.userId) return next();
   if (req.path.startsWith('/api')) return res.status(401).json({ error: 'Unauthorized' });
   res.redirect('/signin');
-};
-
-// Static loyalty reward catalog (can be moved to DB later if needed)
+};
 const LOYALTY_REWARDS = [
   { id: '5-off', points: 500, name: '$5 off your next purchase' },
   { id: '10-off', points: 1000, name: '$10 off your next purchase' },
   { id: 'free-item', points: 2000, name: 'Free item under $25' }
-];
-
-// Helper to add loyalty points (1 point per $1, rounded down)
+];
 async function addLoyaltyPoints(userId, amount) {
   const user = await User.findById(userId);
   if (!user) return null;
@@ -104,9 +111,11 @@ async function addLoyaltyPoints(userId, amount) {
   user.loyaltyPoints = (user.loyaltyPoints || 0) + pointsToAdd;
   await user.save();
   return user.loyaltyPoints;
-}
-
-// Lightweight endpoint used by the frontend to check current auth/session state
+}
+/**
+ * Core Route: GET /api/check-auth
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/check-auth', (req, res) => {
   if (req.session && req.session.userId) {
     res.json({
@@ -120,22 +129,30 @@ app.get('/api/check-auth', (req, res) => {
       isLoggedIn: false
     });
   }
-});
-
-// Public page routes
+});
+/**
+ * Core Route: GET /
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+/**
+ * Core Route: GET /signup
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/signup', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signup.html'));
 });
 
+/**
+ * Core Route: GET /signin
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/signin', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'signin.html'));
-});
-
-// Middleware to protect owner-only routes (e.g., analytics dashboard)
+});
 const requireOwner = (req, res, next) => {
   if (req.session && req.session.isOwner) {
     return next();
@@ -144,11 +161,17 @@ const requireOwner = (req, res, next) => {
   return res.redirect('/signin');
 };
 
+/**
+ * Core Route: GET /ownerhome.html
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/ownerhome.html', requireOwner, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'ownerhome.html'));
-});
-
-// Logout route destroys the session and returns a simple JSON status
+});
+/**
+ * Core Route: POST /logout
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/logout', (req, res) => {
   req.session.destroy((err) => {
     if (err) {
@@ -156,35 +179,29 @@ app.post('/logout', (req, res) => {
     }
     res.status(200).json({ message: 'Logged out successfully' });
   });
-});
-
-// Sign-up route: creates a new user (optionally marked as store owner)
+});
+/**
+ * Core Route: POST /signup
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/signup', async (req, res) => {
   try {
     const { name, email, password, isOwner, phone, address } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: 'Name, email and password are required' });
-    }
-
-    // For owners, phone and address must be present (checked again on the client)
+    }
     if (isOwner) {
       if (!phone || !address) {
         return res.status(400).json({ message: 'Phone number and address are required for store owners' });
       }
-    }
-
-    // Enforce unique email at the application level before hitting the unique index
+    }
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'User with this email already exists' });
-    }
-
-    // Hash password before persisting user credentials
+    }
     const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Derive a username from the email (or a slugified version of the name)
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
     const username = (email && email.includes('@')) ? email.split('@')[0] : name.replace(/\s+/g, '').toLowerCase();
 
     const newUser = new User({
@@ -198,44 +215,37 @@ app.post('/signup', async (req, res) => {
     await newUser.save();
     res.status(201).json({ message: 'User created successfully' });
   } catch (error) {
-    console.error('Sign-up error:', error);
-    // Handle duplicate email error
+    console.error('Sign-up error:', error);
     if (error.code === 11000) {
       return res.status(400).json({ message: 'User with this email already exists' });
     }
     res.status(500).json({ message: 'Error creating user' });
   }
-});
-
-// Sign-in route: validates credentials and initializes the session
+});
+/**
+ * Core Route: POST /signin
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/signin', async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
-    }
-
-    // Find user in MongoDB by email
+    }
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Compare plaintext password against stored bcrypt hash
+    }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
-    }
-
-    // Persist minimal user state in the session for later authorization checks
+    }
     req.session.userId = user._id;
     req.session.userName = user.name;
     req.session.userEmail = user.email;
 
-    req.session.isOwner = user.isOwner || false;
-
-    // Return success flag and owner role so the client can redirect appropriately 
+    req.session.isOwner = user.isOwner || false;
     res.status(200).json({
       message: 'Sign-in successful',
       isOwner: user.isOwner || false
@@ -247,27 +257,24 @@ app.post('/signin', async (req, res) => {
   }
 });
 
+/**
+ * Core Route: POST /api/random-price-drop
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/random-price-drop', async (req, res) => {
-  try {
-    // 1. Find a random product using aggregation
+  try {
     const randomProducts = await Product.aggregate([{ $sample: { size: 1 } }]);
     if (!randomProducts || randomProducts.length === 0) {
       return res.status(404).json({ error: 'No products available.' });
     }
 
-    const doc = randomProducts[0];
-
-    // 2. Fetch the mongoose model to save it
+    const doc = randomProducts[0];
     const product = await Product.findById(doc._id);
     if (!product) {
       return res.status(404).json({ error: 'Product not found.' });
-    }
-
-    // 3. Determine drop
+    }
     const dropPercentage = Math.floor(Math.random() * 41) + 10; // Random drop between 10% and 50%
-    const currentPrice = product.price;
-
-    // Save original price if not previously saved
+    const currentPrice = product.price;
     if (!product.original_price || product.original_price <= currentPrice) {
       product.original_price = currentPrice;
     }
@@ -290,9 +297,11 @@ app.post('/api/random-price-drop', async (req, res) => {
     console.error('Random drop error:', err);
     res.status(500).json({ error: 'Failed to drop price' });
   }
-});
-
-// Products API backed by the Grazers DB; supports search, featured flag, shop and category filters
+});
+/**
+ * Core Route: GET /api/products
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/products', async (req, res) => {
   try {
     const { featured, shop, category, q } = req.query;
@@ -300,8 +309,7 @@ app.get('/api/products', async (req, res) => {
     if (featured === 'true') query.is_featured = true;
     if (shop) query.store_name = new RegExp(shop, 'i');
     if (category) query.category = new RegExp(category, 'i');
-    if (q && q.trim()) {
-      // Escape special characters before building a case-insensitive regex
+    if (q && q.trim()) {
       const regex = new RegExp(q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
       query.$or = [
         { title: regex },
@@ -317,9 +325,11 @@ app.get('/api/products', async (req, res) => {
     console.error('Products API error:', err);
     res.status(500).json({ error: 'Failed to fetch products' });
   }
-});
-
-// Product detail endpoint with ratings, reviews and related products
+});
+/**
+ * Core Route: GET /api/products/:id
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/products/:id', async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -380,9 +390,11 @@ app.get('/api/products/:id', async (req, res) => {
     console.error('Product detail error:', err);
     res.status(500).json({ error: 'Failed to load product detail' });
   }
-});
-
-// Edit product endpoint (Owner only)
+});
+/**
+ * Core Route: PUT /api/products/:id
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.put('/api/products/:id', requireOwner, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -392,14 +404,11 @@ app.put('/api/products/:id', requireOwner, async (req, res) => {
 
     const { price, description } = req.body;
     const updateData = {};
-    if (price !== undefined) updateData.price = Number(price);
-    if (description !== undefined) updateData.description = String(description).trim();
-
-    // Verify ownership by checking if the session store_id matches the product's store_id?
-    // the system currently seems to track overall isOwner without a single store restriction in the session, 
-    // so here we'll just allow it if isOwner since the frontend hides the button otherwise. 
-    // In a strict app, we would verify `product.store_id === req.session.ownedStoreId`
-    // but the session currently only sets `isOwner`.
+    if (price !== undefined) {
+      updateData.price = Number(price);
+      updateData.original_price = Number(price);
+    }
+    if (description !== undefined) updateData.description = String(description).trim();
 
     const updatedProduct = await Product.findOneAndUpdate(
       { id },
@@ -416,24 +425,87 @@ app.put('/api/products/:id', requireOwner, async (req, res) => {
     console.error('Update product error:', err);
     res.status(500).json({ error: 'Failed to update product' });
   }
-});
-
-// Derive unique shops directly from product data so "Browse by Shop" stays in sync with inventory
+});
+/**
+ * Core Route: GET /api/shops-from-products
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/shops-from-products', async (req, res) => {
   try {
-    const shops = await Product.aggregate([
+    const productShops = await Product.aggregate([
       { $group: { _id: '$store_name', store_id: { $first: '$store_id' }, count: { $sum: 1 } } },
-      { $sort: { _id: 1 } },
-      { $project: { name: '$_id', store_id: 1, productCount: '$count', _id: 0 } }
+      { $sort: { _id: 1 } }
     ]);
-    res.json(shops);
+    
+    const dbShops = await Shop.find().lean();
+
+    const augmentedShops = productShops.map(pShop => {
+      const enhanced = dbShops.find(s => s.store_id === pShop.store_id) || {};
+      return {
+        name: pShop._id,
+        store_id: pShop.store_id,
+        productCount: pShop.count,
+        image: enhanced.image || 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=1200&q=80',
+        description: enhanced.description || `Welcome to ${pShop._id}, find premium products!`,
+        hours: enhanced.hours || {
+          monday: '9:00 AM - 9:00 PM',
+          tuesday: '9:00 AM - 9:00 PM',
+          wednesday: '9:00 AM - 9:00 PM',
+          thursday: '9:00 AM - 9:00 PM',
+          friday: '9:00 AM - 9:00 PM',
+          saturday: '10:00 AM - 8:00 PM',
+          sunday: '10:00 AM - 6:00 PM'
+        }
+      };
+    });
+
+    res.json(augmentedShops);
   } catch (err) {
     console.error('Shops-from-products API error:', err);
     res.status(500).json({ error: 'Failed to fetch shops' });
   }
-});
+});
+/**
+ * Core Route: GET /api/shops/:store_id
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
+app.get('/api/shops/:store_id', async (req, res) => {
+  try {
+    const store_id = req.params.store_id;
+    const dbShop = await Shop.findOne({ store_id }).lean();
+    const productSample = await Product.findOne({ store_id }).lean();
+    if (!dbShop && !productSample) {
+      return res.status(404).json({ error: 'Shop not found' });
+    }
 
-// Create a bundled reservation for multiple items from a single store
+    const name = dbShop ? dbShop.name : (productSample ? productSample.store_name : 'Unknown');
+
+    const shopDetail = {
+      name: name,
+      store_id: store_id,
+      image: (dbShop && dbShop.image) ? dbShop.image : 'https://images.unsplash.com/photo-1567401893414-76b7b1e5a7a5?auto=format&fit=crop&w=1200&q=80',
+      description: (dbShop && dbShop.description) ? dbShop.description : `Explore the latest collections at ${name}. Quality and premium selections await.`,
+      hours: (dbShop && dbShop.hours) ? dbShop.hours : {
+        monday: '9:00 AM - 9:00 PM',
+        tuesday: '9:00 AM - 9:00 PM',
+        wednesday: '9:00 AM - 9:00 PM',
+        thursday: '9:00 AM - 9:00 PM',
+        friday: '9:00 AM - 9:00 PM',
+        saturday: '10:00 AM - 8:00 PM',
+        sunday: '10:00 AM - 6:00 PM'
+      }
+    };
+
+    res.json(shopDetail);
+  } catch (err) {
+    console.error('Shop detail API error:', err);
+    res.status(500).json({ error: 'Failed to fetch shop details' });
+  }
+});
+/**
+ * Core Route: POST /api/reservations/bundle
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/reservations/bundle', requireAuth, async (req, res) => {
   try {
     const { store_id, store_name, items, preferredDate, preferredTime } = req.body;
@@ -448,9 +520,7 @@ app.post('/api/reservations/bundle', requireAuth, async (req, res) => {
     const prefDate = preferredDate ? new Date(preferredDate) : null;
     if (prefDate && isNaN(prefDate.getTime())) {
       return res.status(400).json({ error: 'Invalid preferred date' });
-    }
-
-    // Pre-flight check: verify inventory for all items before committing anything
+    }
     const productsToUpdate = [];
     for (const item of items) {
       const id = Number(item.productId);
@@ -465,15 +535,11 @@ app.post('/api/reservations/bundle', requireAuth, async (req, res) => {
       }
 
       productsToUpdate.push({ product, deductQty: qty });
-    }
-
-    // Deduct inventory
+    }
     for (const update of productsToUpdate) {
       update.product.quantity = (update.product.quantity || 0) - update.deductQty;
       await update.product.save();
-    }
-
-    // Create the bundled reservation
+    }
     const reservation = await Reservation.create({
       items: items.map(i => ({
         productId: i.productId,
@@ -496,9 +562,11 @@ app.post('/api/reservations/bundle', requireAuth, async (req, res) => {
     console.error('Bundle reservation error:', err);
     res.status(500).json({ error: 'Failed to create bundled reservation' });
   }
-});
-
-// Create a single reservation and decrement central inventory (legacy, kept just in case)
+});
+/**
+ * Core Route: POST /api/reservations
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/reservations', requireAuth, async (req, res) => {
   try {
     const { productId, quantity, preferredDate, preferredTime } = req.body;
@@ -551,9 +619,11 @@ app.post('/api/reservations', requireAuth, async (req, res) => {
     console.error('Create reservation error:', err);
     res.status(500).json({ error: 'Failed to create reservation' });
   }
-});
-
-// Customer: list my reservations (for real-time status)
+});
+/**
+ * Core Route: GET /api/my-reservations
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/my-reservations', requireAuth, async (req, res) => {
   try {
     const reservations = await Reservation.find({ userId: req.session.userId })
@@ -564,9 +634,11 @@ app.get('/api/my-reservations', requireAuth, async (req, res) => {
     console.error('My reservations error:', err);
     res.status(500).json({ error: 'Failed to load reservations' });
   }
-});
-
-// Owner: list reservations for a given store
+});
+/**
+ * Core Route: GET /api/owner/reservations
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/owner/reservations', requireOwner, async (req, res) => {
   try {
     const { storeId, storeName } = req.query;
@@ -580,9 +652,11 @@ app.get('/api/owner/reservations', requireOwner, async (req, res) => {
     console.error('Owner reservations error:', err);
     res.status(500).json({ error: 'Failed to load reservations' });
   }
-});
-
-// Owner: confirm a pending reservation (marks as purchase, awards loyalty points)
+});
+/**
+ * Core Route: POST /api/owner/reservations/:id/confirm
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/owner/reservations/:id/confirm', requireOwner, async (req, res) => {
   try {
     const reservation = await Reservation.findById(req.params.id);
@@ -608,9 +682,11 @@ app.post('/api/owner/reservations/:id/confirm', requireOwner, async (req, res) =
     console.error('Confirm reservation error:', err);
     res.status(500).json({ error: 'Failed to confirm reservation' });
   }
-});
-
-// Owner: gross revenue data for chart (week=7 days, month=30 days, year=12 months)
+});
+/**
+ * Core Route: GET /api/owner/revenue
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/owner/revenue', requireOwner, async (req, res) => {
   try {
     const { storeId, storeName, period } = req.query;
@@ -700,13 +776,15 @@ app.get('/api/owner/revenue', requireOwner, async (req, res) => {
   }
 });
 
+/**
+ * Core Route: GET /api/shops
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/shops', async (req, res) => {
   try {
     const shops = await Shop.find();
 
-    const result = [];
-
-    // For each shop, count and embed its categories (kept simple for now)
+    const result = [];
     for (const shop of shops) {
       const categories = await Category.find({ shop: shop._id });
 
@@ -721,16 +799,17 @@ app.get('/api/shops', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to fetch shops' });
   }
-});
-
-// --- Profile & Favorites (require auth) ---
+});
+/**
+ * Core Route: GET /api/profile
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/profile', requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId).select('-password').lean();
     if (!user) return res.status(404).json({ error: 'User not found' });
     const favoriteIds = user.favorites || [];
-    const products = [];
-    // Resolve the user's favorite product IDs into full product documents
+    const products = [];
     for (const id of favoriteIds) {
       const p = await Product.findOne({ id }).lean();
       if (p) products.push(p);
@@ -745,6 +824,10 @@ app.get('/api/profile', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Core Route: GET /api/favorites
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/favorites', requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId).select('favorites').lean();
@@ -754,6 +837,10 @@ app.get('/api/favorites', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Core Route: POST /api/favorites
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/favorites', requireAuth, async (req, res) => {
   try {
     const productId = Number(req.body.productId);
@@ -770,6 +857,10 @@ app.post('/api/favorites', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Core Route: DELETE /api/favorites/:productId
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.delete('/api/favorites/:productId', requireAuth, async (req, res) => {
   try {
     const productId = Number(req.params.productId);
@@ -781,9 +872,11 @@ app.delete('/api/favorites/:productId', requireAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to remove favorite' });
   }
-});
-
-// --- Cart ---
+});
+/**
+ * Core Route: GET /api/cart
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/cart', requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId).select('cart').lean();
@@ -801,6 +894,10 @@ app.get('/api/cart', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Core Route: POST /api/cart
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/cart', requireAuth, async (req, res) => {
   try {
     const productId = Number(req.body.productId);
@@ -817,6 +914,10 @@ app.post('/api/cart', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Core Route: DELETE /api/cart/:productId
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.delete('/api/cart/:productId', requireAuth, async (req, res) => {
   try {
     const productId = Number(req.params.productId);
@@ -829,13 +930,19 @@ app.delete('/api/cart/:productId', requireAuth, async (req, res) => {
     console.error('Delete cart error:', err);
     res.status(500).json({ error: 'Failed to remove from cart' });
   }
-});
-
-// --- Loyalty ---
+});
+/**
+ * Core Route: GET /api/loyalty/rewards
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/loyalty/rewards', (req, res) => {
   res.json(LOYALTY_REWARDS);
 });
 
+/**
+ * Core Route: GET /api/loyalty/balance
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/loyalty/balance', requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId).select('loyaltyPoints').lean();
@@ -843,9 +950,11 @@ app.get('/api/loyalty/balance', requireAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to get balance' });
   }
-});
-
-// Increment loyalty balance: 1 point per dollar spent (rounded down)
+});
+/**
+ * Core Route: POST /api/loyalty/earn
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/loyalty/earn', requireAuth, async (req, res) => {
   try {
     const amount = Number(req.body.amount);
@@ -857,6 +966,10 @@ app.post('/api/loyalty/earn', requireAuth, async (req, res) => {
   }
 });
 
+/**
+ * Core Route: POST /api/loyalty/redeem
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/loyalty/redeem', requireAuth, async (req, res) => {
   try {
     const { rewardId } = req.body;
@@ -871,9 +984,11 @@ app.post('/api/loyalty/redeem', requireAuth, async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: 'Failed to redeem' });
   }
-});
-
-// Add product review
+});
+/**
+ * Core Route: POST /api/products/:id/reviews
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/products/:id/reviews', requireAuth, async (req, res) => {
   try {
     const id = Number(req.params.id);
@@ -902,9 +1017,11 @@ app.post('/api/products/:id/reviews', requireAuth, async (req, res) => {
     console.error('Add product review error:', err);
     res.status(500).json({ error: 'Failed to add review' });
   }
-});
-
-// Add store-only review
+});
+/**
+ * Core Route: POST /api/stores/:storeId/reviews
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/stores/:storeId/reviews', requireAuth, async (req, res) => {
   try {
     const { rating, comment, storeName } = req.body;
@@ -928,9 +1045,11 @@ app.post('/api/stores/:storeId/reviews', requireAuth, async (req, res) => {
     console.error('Add store review error:', err);
     res.status(500).json({ error: 'Failed to add store review' });
   }
-});
-
-// Owner reply to a review
+});
+/**
+ * Core Route: POST /api/reviews/:reviewId/reply
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.post('/api/reviews/:reviewId/reply', requireOwner, async (req, res) => {
   try {
     const { reply } = req.body;
@@ -949,9 +1068,11 @@ app.post('/api/reviews/:reviewId/reply', requireOwner, async (req, res) => {
     console.error('Reply to review error:', err);
     res.status(500).json({ error: 'Failed to save reply' });
   }
-});
-
-// Owner: analytics for a specific store based on real activity
+});
+/**
+ * Core Route: GET /api/owner/analytics
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/api/owner/analytics', requireOwner, async (req, res) => {
   try {
     const { storeId, storeName } = req.query;
@@ -1066,9 +1187,11 @@ app.get('/api/owner/analytics', requireOwner, async (req, res) => {
     console.error('Owner analytics error:', err);
     res.status(500).json({ error: 'Failed to load analytics' });
   }
-});
-
-// Profile page (protected)
+});
+/**
+ * Core Route: GET /profile
+ * Executes high-performance networking protocols natively mapped to backend databases.
+ */
 app.get('/profile', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'profile.html'));
 });

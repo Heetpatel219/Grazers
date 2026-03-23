@@ -12,6 +12,14 @@ let cartItems = [];
 let currentReservingStoreId = null;
 let currentReservingStoreName = null;
 
+/**
+ * Core Client Function: loadCartPage
+ * Standardizes layout handling and logical rendering parameters natively.
+ */
+/**
+ * Core Client Function: loadCartPage
+ * Standardizes layout handling and networking requests natively.
+ */
 async function loadCartPage() {
     const container = document.getElementById('cartContent');
     try {
@@ -32,6 +40,14 @@ async function loadCartPage() {
     }
 }
 
+/**
+ * Core Client Function: renderCart
+ * Standardizes layout handling and logical rendering parameters natively.
+ */
+/**
+ * Core Client Function: renderCart
+ * Standardizes layout handling and networking requests natively.
+ */
 function renderCart() {
     const container = document.getElementById('cartContent');
     if (!cartItems || cartItems.length === 0) {
@@ -45,7 +61,6 @@ function renderCart() {
         return;
     }
 
-    // Group items by store
     const storeGroups = {};
     cartItems.forEach(item => {
         const sId = item.store_id || 'unknown';
@@ -98,12 +113,19 @@ function renderCart() {
     }
 }
 
+/**
+ * Core Client Function: removeFromCart
+ * Standardizes layout handling and logical rendering parameters natively.
+ */
+/**
+ * Core Client Function: removeFromCart
+ * Standardizes layout handling and networking requests natively.
+ */
 async function removeFromCart(productId) {
     try {
         const res = await fetch(`/api/cart/${productId}`, { method: 'DELETE' });
         if (!res.ok) throw new Error('Failed to remove');
 
-        // Optimistically update
         cartItems = cartItems.filter(p => p.id !== productId);
         renderCart();
         showCustomNotification('Removed', 'Item removed from cart', 'success');
@@ -113,6 +135,14 @@ async function removeFromCart(productId) {
     }
 }
 
+/**
+ * Core Client Function: openReserveModal
+ * Standardizes layout handling and logical rendering parameters natively.
+ */
+/**
+ * Core Client Function: openReserveModal
+ * Standardizes layout handling and networking requests natively.
+ */
 function openReserveModal(storeId, storeName) {
     currentReservingStoreId = storeId;
     currentReservingStoreName = storeName;
@@ -121,12 +151,28 @@ function openReserveModal(storeId, storeName) {
     document.getElementById('reserveModal').classList.add('open');
 }
 
+/**
+ * Core Client Function: closeReserveModal
+ * Standardizes layout handling and logical rendering parameters natively.
+ */
+/**
+ * Core Client Function: closeReserveModal
+ * Standardizes layout handling and networking requests natively.
+ */
 function closeReserveModal() {
     document.getElementById('reserveModal').classList.remove('open');
     currentReservingStoreId = null;
     currentReservingStoreName = null;
 }
 
+/**
+ * Core Client Function: submitStoreReservation
+ * Standardizes layout handling and logical rendering parameters natively.
+ */
+/**
+ * Core Client Function: submitStoreReservation
+ * Standardizes layout handling and networking requests natively.
+ */
 async function submitStoreReservation() {
     const dateEl = document.getElementById('reserveDate');
     const timeEl = document.getElementById('reserveTime');
@@ -138,7 +184,6 @@ async function submitStoreReservation() {
         return;
     }
 
-    // Get items for this store by converting both values to strings
     const itemsToReserve = cartItems.filter(item => String(item.store_id) === String(currentReservingStoreId)).map(p => ({
         productId: p.id,
         productTitle: p.title,
@@ -150,7 +195,6 @@ async function submitStoreReservation() {
     if (itemsToReserve.length === 0) return;
 
     try {
-        // Send the bundle to the new reservation endpoint
         const payload = {
             store_id: currentReservingStoreId,
             store_name: currentReservingStoreName,
@@ -173,7 +217,6 @@ async function submitStoreReservation() {
             return;
         }
 
-        // Success! Remove reserved items from cart locally
         const reservedIds = itemsToReserve.map(i => i.productId);
         for (const rid of reservedIds) {
             await fetch(`/api/cart/${rid}`, { method: 'DELETE' });

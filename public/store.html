@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grazers | Store Details</title>
+  <link rel="stylesheet" href="home.css" />
+  <link rel="stylesheet" href="notifications.css" />
+  <style>
+    .storeHero {
+      position: relative;
+      height: 480px;
+      border-radius: 20px;
+      overflow: hidden;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: flex-end;
+      padding: 40px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.15);
+    }
+    .storeHeroBg {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      object-fit: cover;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+    .storeHeroOverlay {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 70%, transparent 100%);
+      z-index: 2;
+    }
+    .storeHeroContent {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      width: 100%;
+      justify-content: space-between;
+      align-items: flex-end;
+      color: white;
+      gap: 30px;
+    }
+    .storeInfo {
+      flex: 1;
+    }
+    .storeInfo h1 {
+      font-size: 56px;
+      font-family: Georgia, serif;
+      margin: 0 0 10px;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .storeInfo p {
+      font-size: 18px;
+      margin: 0;
+      color: rgba(255,255,255,0.9);
+      max-width: 600px;
+      line-height: 1.5;
+    }
+    .storeHoursBox {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 24px 32px;
+      border-radius: 16px;
+      min-width: 280px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .storeHoursBox h3 {
+      margin: 0 0 16px;
+      font-size: 18px;
+      font-family: Georgia, serif;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .hoursRow {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .hoursRow:last-child {
+      margin-bottom: 0;
+    }
+    .hoursDay {
+      font-weight: bold;
+      text-transform: capitalize;
+      color: rgba(255,255,255,0.9);
+      width: 80px;
+    }
+    .hoursTime {
+      color: white;
+    }
+    @media (max-width: 900px) {
+      .storeHeroContent { flex-direction: column; align-items: flex-start; }
+      .storeHero { height: auto; min-height: 500px; }
+      .storeHoursBox { width: 100%; box-sizing: border-box; }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="brandIcon">G</div>
+      <div class="brandText">
+        <div class="brandName">Grazers</div>
+        <div class="brandTag">FASHION COLLECTION</div>
+      </div>
+    </div>
+    <div class="topIcons">
+      <a class="topLink" href="/">Home</a>
+      <a class="topLink" id="signInLink" href="/signin" style="display: none;">Sign In</a>
+      <span id="userInfo" style="display: none;">
+        <span id="userName"></span>
+        <a class="topLink" href="#" onclick="logout(event)">Sign Out</a>
+      </span>
+      <a class="iconBubble" href="/cart.html" style="display:flex; align-items:center; gap:6px;" title="Your Cart">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
+        <span id="cartCount">0</span>
+      </a>
+      <a class="iconBubble profileLink" href="/profile" id="profileLink" style="display: none;">User Profile</a>
+    </div>
+  </header>
+
+  <main class="layout" style="grid-template-columns: 1fr;">
+    <section class="main">
+      
+      <div id="storeHeroContainer">
+        <!-- Store hero banner will be injected here -->
+      </div>
+
+      <section class="categorySection" id="store-products">
+        <h2 id="storeProductsTitle">All Products</h2>
+        <p class="subText">Browse the full collection from this store</p>
+        
+        <div class="categoryGrid productGrid" id="productGrid">
+          <p class="loadingText">Loading products…</p>
+        </div>
+      </section>
+
+    </section>
+  </main>
+
+  <script src="notifications.js"></script>
+  <script>
+
+    let favoriteIds = [];
+    let cartIds = [];
+    let currentStoreName = '';
+
+    /**
+     * Core Client Function: checkAuth
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    async function checkAuth() {
+      try {
+        const response = await fetch('/api/check-auth');
+        const data = await response.json();
+        const signInLink = document.getElementById('signInLink');
+        const userInfo = document.getElementById('userInfo');
+        const userName = document.getElementById('userName');
+
+        if (data.isLoggedIn) {
+          if (signInLink) signInLink.style.display = 'none';
+          document.getElementById('profileLink').style.display = 'inline-flex';
+          userName.textContent = data.userName || 'User';
+          userInfo.style.display = 'inline';
+          await loadFavorites();
+          await loadCart();
+        } else {
+          if (signInLink) signInLink.style.display = 'inline';
+          userInfo.style.display = 'none';
+          updateCartCount(0);
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error);
+      }
+    }
+
+    /**
+     * Core Client Function: loadCart
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    async function loadCart() {
+      try {
+        const res = await fetch('/api/cart');
+        if (res.status === 401) return;
+        const products = await res.json();
+        cartIds = products.map(p => p.id) || [];
+        updateCartCount(cartIds.length);
+      } catch (e) { }
+    }
+
+    /**
+     * Core Client Function: updateCartCount
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    function updateCartCount(n) {
+      const el = document.getElementById('cartCount');
+      if (el) el.textContent = n;
+    }
+
+    /**
+     * Core Client Function: loadFavorites
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    async function loadFavorites() {
+      try {
+        const res = await fetch('/api/favorites');
+        if (res.status === 401) return;
+        const data = await res.json();
+        favoriteIds = data.favoriteIds || [];
+      } catch (e) { }
+    }
+
+    /**
+     * Core Client Function: renderProductCard
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    function renderProductCard(item, isFav) {
+      const cat = (item.category || '').toUpperCase();
+      const img = item.images || '';
+      const title = item.title || 'Product';
+      const price = typeof item.price === 'number' ? item.price.toFixed(2) : (item.price || '0.00');
+      const store = item.store_name || '';
+      const id = item.id;
+      const favClass = isFav ? ' productFavBtn active' : ' productFavBtn';
+      const favIcon = isFav ? '♥' : '♡';
+      return `
+        <div class="productCard" data-product-id="${id}">
+          <div class="productCardClickable" data-product-id="${id}">
+            <div class="productCardImg">
+              <button type="button" class="${favClass}" data-product-id="${id}" title="${isFav ? 'Remove from favourites' : 'Add to favourites'}" aria-label="Favorite">${favIcon}</button>
+              <img src="${img}" alt="${title}">
+              <span class="productBadge ${item.is_featured ? 'badgePink' : (item.is_best_seller ? 'badgePurple' : 'badgeBlue')}">${cat}</span>
+            </div>
+            <div class="productCardBody">
+              <h3>${title}</h3>
+              <p class="productPrice">$${price}</p>
+            </div>
+          </div>
+          <div class="productCardActions" style="padding: 0 16px 16px;">
+            <button type="button" class="productBtn reserveBtn" data-price="${item.price}" data-product-id="${id}">Add to Cart</button>
+          </div>
+        </div>
+      `;
+    }
+
+    /**
+     * Core Client Function: loadStoreData
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    async function loadStoreData() {
+      const params = new URLSearchParams(window.location.search);
+      const storeId = params.get('store_id');
+      if (!storeId) {
+        document.getElementById('storeHeroContainer').innerHTML = '<h2>Store not found</h2>';
+        return;
+      }
+      
+      try {
+        const response = await fetch('/api/shops/' + encodeURIComponent(storeId));
+        if (!response.ok) throw new Error('Failed to load store');
+        const shop = await response.json();
+        
+        currentStoreName = shop.name;
+        document.title = "Grazers | " + shop.name;
+        document.getElementById('storeProductsTitle').textContent = "Products from " + shop.name;
+
+        const hours = shop.hours;
+        const days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+        let hoursHtml = '';
+        days.forEach(day => {
+            hoursHtml += `
+              <div class="hoursRow">
+                <span class="hoursDay">${day}</span>
+                <span class="hoursTime">${hours[day]}</span>
+              </div>
+            `;
+        });
+
+        document.getElementById('storeHeroContainer').innerHTML = `
+          <div class="storeHero">
+            <img src="${shop.image}" alt="${shop.name}" class="storeHeroBg">
+            <div class="storeHeroOverlay"></div>
+            <div class="storeHeroContent">
+              <div class="storeInfo">
+                <h1>${shop.name}</h1>
+                <p>${shop.description}</p>
+              </div>
+              <div class="storeHoursBox">
+                <h3>Opening Hours</h3>
+                ${hoursHtml}
+              </div>
+            </div>
+          </div>
+        `;
+
+        loadProducts(shop.name);
+      } catch (err) {
+        console.error(err);
+        document.getElementById('storeHeroContainer').innerHTML = '<h2>Error loading store details.</h2>';
+      }
+    }
+
+    /**
+     * Core Client Function: loadProducts
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    async function loadProducts(storeName) {
+      const grid = document.getElementById('productGrid');
+      try {
+        const response = await fetch('/api/products?shop=' + encodeURIComponent(storeName));
+        const products = await response.json();
+        grid.innerHTML = '';
+        
+        if (products.length === 0) {
+          grid.innerHTML = '<p class="emptyHint">No products currently available at this store.</p>';
+          return;
+        }
+
+        products.forEach(item => {
+          grid.insertAdjacentHTML('beforeend', renderProductCard(item, favoriteIds.includes(item.id)));
+        });
+      } catch (err) {
+        grid.innerHTML = '<p class="emptyHint">Error loading products.</p>';
+      }
+    }
+
+    document.addEventListener('click', async function (e) {
+      const favBtn = e.target.closest('.productFavBtn');
+      if (!favBtn) return;
+      const productId = parseInt(favBtn.dataset.productId, 10);
+      e.preventDefault(); e.stopPropagation();
+      const isFav = favoriteIds.includes(productId);
+      try {
+        let res;
+        if (isFav) {
+          res = await fetch('/api/favorites/' + productId, { method: 'DELETE' });
+        } else {
+          res = await fetch('/api/favorites', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ productId })
+          });
+        }
+        if (res.status === 401) return alert('Please sign in to add favourites.');
+        if (res.ok) {
+          const data = await res.json();
+          favoriteIds = data.favoriteIds || [];
+          favBtn.classList.toggle('active', favoriteIds.includes(productId));
+          favBtn.textContent = favoriteIds.includes(productId) ? '♥' : '♡';
+        }
+      } catch (err) {}
+    });
+
+    document.addEventListener('click', async function (e) {
+      const btn = e.target.closest('.reserveBtn');
+      if (!btn) return;
+      const productId = btn.dataset.productId;
+      try {
+        const res = await fetch('/api/cart', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ productId })
+        });
+        if (res.status === 401) return showCustomNotification('Sign In Required', 'Please sign in to add to cart.', 'error');
+        const data = await res.json();
+        if (!res.ok) return showCustomNotification('Cart Error', data.error || 'Could not add to cart.', 'error');
+        
+        cartIds = data.cartIds || [];
+        updateCartCount(cartIds.length);
+        showCustomNotification('Added to Cart', 'Product has been added to your cart for try-on.', 'success');
+      } catch (err) {}
+    });
+
+    document.addEventListener('click', function (e) {
+      const clickable = e.target.closest('.productCardClickable');
+      if (!clickable) return;
+      const favBtn = e.target.closest('.productFavBtn');
+      if (favBtn) return;
+      const id = clickable.dataset.productId;
+      if (id) window.location.href = '/product.html?id=' + encodeURIComponent(id);
+    });
+
+    /**
+     * Core Client Function: logout
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
+    async function logout(e) {
+      e.preventDefault();
+      await fetch('/logout', { method: 'POST' });
+      window.location.reload();
+    }
+
+    (async function init() {
+      await checkAuth();
+      await loadStoreData();
+    })();
+  
+</script>
+</body>
+</html>

@@ -181,8 +181,10 @@
       gap: 14px;
       margin-top: 8px;
       overflow-x: auto;
-      padding-bottom: 6px;
+      overflow-y: hidden;
+      padding-bottom: 20px;
       scroll-snap-type: x mandatory;
+      align-items: stretch;
     }
 
     .related-card {
@@ -193,6 +195,8 @@
       background: #fff;
       cursor: pointer;
       scroll-snap-align: start;
+      display: flex;
+      flex-direction: column;
     }
 
     .related-card-title {
@@ -534,10 +538,15 @@
   </main>
 
   <script>
+
     let currentProductId = null;
     let favoriteIds = [];
     let priceChartInstance = null;
 
+    /**
+     * Core Client Function: generatePriceHistoryChart
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function generatePriceHistoryChart(product) {
       const currentPrice = typeof product.price === 'number' ? product.price : parseFloat(product.price || 0);
       const originalPrice = typeof product.original_price === 'number' ? product.original_price : currentPrice;
@@ -556,26 +565,23 @@
       const prices = [];
       const labels = [];
 
-      // If there's a price drop, 'Today' is the new low price, 'Yesterday' (or 1d ago) is the original
+      prices.unshift(currentPrice);
+      labels.unshift('Today');
+      
+      let pastBase = currentPrice;
+      let offset = 1;
+
       if (originalPrice > currentPrice) {
-        prices.unshift(currentPrice);
-        labels.unshift('Today');
         prices.unshift(originalPrice);
         labels.unshift('1d ago');
-      } else {
-        prices.unshift(currentPrice);
-        labels.unshift('Today');
+        pastBase = originalPrice;
+        offset = 2; 
       }
 
-      let currentVal = originalPrice;
-      for (let i = 1; i <= 5; i++) {
+      for (let i = offset; i <= 6; i++) {
         const r = random();
-        if (r > 0.6) {
-          currentVal = currentVal * (1 + (random() * 0.15));
-        } else if (r > 0.3) {
-          currentVal = currentVal * (1 - (random() * 0.1));
-        }
-        prices.unshift(currentVal);
+        const pastPrice = pastBase * (0.6 + (r * 0.9));
+        prices.unshift(pastPrice);
         labels.unshift(i + 'mo ago');
       }
 
@@ -601,23 +607,39 @@
       });
     }
 
+    /**
+     * Core Client Function: getQueryId
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function getQueryId() {
       const params = new URLSearchParams(window.location.search);
       return params.get('id');
     }
 
+    /**
+     * Core Client Function: starsForRating
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function starsForRating(r) {
       if (!r || r <= 0) return '';
       const rounded = Math.round(r);
       return '★'.repeat(rounded) + '☆'.repeat(5 - rounded);
     }
 
+    /**
+     * Core Client Function: formatDate
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function formatDate(iso) {
       if (!iso) return '';
       const d = new Date(iso);
       return d.toLocaleDateString();
     }
 
+    /**
+     * Core Client Function: renderReviewElement
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function renderReviewElement(review) {
       const div = document.createElement('div');
       div.className = 'review-card';
@@ -635,6 +657,10 @@
       return div;
     }
 
+    /**
+     * Core Client Function: loadFavorites
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadFavorites() {
       try {
         const res = await fetch('/api/favorites');
@@ -646,6 +672,10 @@
       }
     }
 
+    /**
+     * Core Client Function: updateFavoriteButton
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function updateFavoriteButton() {
       const btn = document.getElementById('favoriteBtnDetail');
       if (!btn || currentProductId === null) return;
@@ -655,6 +685,10 @@
       btn.textContent = isFav ? '♥ Favourited' : '♡ Favourite';
     }
 
+    /**
+     * Core Client Function: toggleFavorite
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function toggleFavorite() {
       if (currentProductId === null) return;
       const idNum = Number(currentProductId);
@@ -687,6 +721,10 @@
       }
     }
 
+    /**
+     * Core Client Function: loadProductDetail
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadProductDetail() {
       const id = getQueryId();
       if (!id) {
@@ -716,8 +754,16 @@
         document.getElementById('productStore').textContent = product.store_name ? 'Sold by ' + product.store_name : '';
         document.getElementById('productCategoryTag').textContent = (product.category || '').toUpperCase() || 'PRODUCT';
 
-        const priceText = typeof product.price === 'number' ? product.price.toFixed(2) : (product.price || '0.00');
-        document.getElementById('productPrice').textContent = '$' + priceText;
+        const priceEl = document.getElementById('productPrice');
+        if (product.original_price && product.original_price > product.price) {
+          const orig = product.original_price.toFixed(2);
+          const cur = product.price.toFixed(2);
+          const percent = Math.round((1 - (product.price / product.original_price)) * 100);
+          priceEl.innerHTML = `<span style="text-decoration: line-through; color: #dc2626; font-size: 1.2rem; margin-right: 8px;">$${orig}</span><span style="color: #10b981;">$${cur} <span style="font-size:1rem;">(-${percent}%)</span></span>`;
+        } else {
+          const priceText = typeof product.price === 'number' ? product.price.toFixed(2) : (product.price || '0.00');
+          priceEl.textContent = '$' + priceText;
+        }
 
         generatePriceHistoryChart(product);
 
@@ -761,9 +807,9 @@
 
         const srText = document.getElementById('storeRatingText');
         if (storeRating && storeRating.count > 0) {
-          srText.textContent = 'Store: ' + storeRating.average.toFixed(1) + ' (' + storeRating.count + ' reviews)';
+          srText.innerHTML = `<span style="margin-left: 12px; padding-left: 12px; border-left: 1px solid #d1d5db;"><span class="stars">${starsForRating(storeRating.average)}</span> <span style="font-size:0.85rem; color:#6b7280;">(${storeRating.count} Store Reviews)</span></span>`;
         } else {
-          srText.textContent = '';
+          srText.innerHTML = '';
         }
 
         document.getElementById('productDescription').textContent = product.description || 'No description available.';
@@ -817,6 +863,10 @@
       }
     }
 
+    /**
+     * Core Client Function: reserveFromDetail
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function reserveFromDetail() {
       const btn = document.getElementById('reserveBtnDetail');
       if (btn.disabled) return;
@@ -846,6 +896,10 @@
       }
     }
 
+    /**
+     * Core Client Function: loadReservationStatus
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadReservationStatus() {
       const section = document.getElementById('reservationStatusSection');
       const list = document.getElementById('reservationStatusList');
@@ -884,6 +938,10 @@
       }
     }
 
+    /**
+     * Core Client Function: setupStarRating
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function setupStarRating(containerId) {
       const container = document.getElementById(containerId);
       if (!container) return;
@@ -903,13 +961,25 @@
       container.addEventListener('mouseleave', () => updateDisplay(Number(container.dataset.rating || 0)));
     }
 
+    /**
+     * Core Client Function: getProductReviewRating
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function getProductReviewRating() {
       return Number(document.getElementById('productReviewStars').dataset.rating || 0);
     }
+    /**
+     * Core Client Function: getStoreReviewRating
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function getStoreReviewRating() {
       return Number(document.getElementById('storeReviewStars').dataset.rating || 0);
     }
 
+    /**
+     * Core Client Function: submitProductReview
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function submitProductReview(e) {
       e.preventDefault();
       if (!currentProductId) return;
@@ -943,6 +1013,10 @@
       }
     }
 
+    /**
+     * Core Client Function: submitStoreReview
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function submitStoreReview(e) {
       e.preventDefault();
       const form = document.getElementById('storeReviewForm');
@@ -1031,7 +1105,8 @@
     setupStarRating('storeReviewStars');
 
     loadProductDetail();
-  </script>
+  
+</script>
   <script src="notifications.js"></script>
 </body>
 

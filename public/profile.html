@@ -97,9 +97,14 @@
   </div>
 
   <script>
+
     let profile = null;
     let rewards = [];
 
+    /**
+     * Core Client Function: loadProfile
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadProfile() {
       try {
         const res = await fetch('/api/profile');
@@ -116,12 +121,20 @@
       }
     }
 
+    /**
+     * Core Client Function: formatDate
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function formatDate(d) {
       if (!d) return '—';
       const date = new Date(d);
       return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
     }
 
+    /**
+     * Core Client Function: renderProfile
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function renderProfile() {
       const name = profile.name || 'User';
       const username = profile.username || (profile.email && profile.email.split('@')[0]) || name.replace(/\s+/g, '').toLowerCase();
@@ -147,6 +160,10 @@
       barcodeEl.textContent = profile._id ? String(profile._id).slice(-12).replace(/\D/g, '0').padEnd(12, '0') : '9780201379624';
     }
 
+    /**
+     * Core Client Function: loadRewards
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadRewards() {
       try {
         const res = await fetch('/api/loyalty/rewards');
@@ -163,6 +180,10 @@
       }
     }
 
+    /**
+     * Core Client Function: loadMyReservations
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function loadMyReservations() {
       const container = document.getElementById('myReservationsList');
       const loading = document.getElementById('reservationsLoading');
@@ -205,6 +226,10 @@
       }
     }
 
+    /**
+     * Core Client Function: renderSaved
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     function renderSaved() {
       const container = document.getElementById('savedScroll');
       const products = profile.favoriteProducts || [];
@@ -217,6 +242,7 @@
         const price = typeof p.price === 'number' ? p.price.toFixed(2) : (p.price || '0.00');
         const card = document.createElement('div');
         card.className = 'savedCard';
+        card.style.cursor = 'pointer';
         card.innerHTML = `
           <div class="savedCardImg">
             <img src="${p.images || ''}" alt="${p.title || 'Product'}" onerror="this.style.background='#eee'">
@@ -228,11 +254,25 @@
             <button type="button" class="savedCardRemove" data-id="${p.id}">Remove</button>
           </div>
         `;
-        card.querySelector('.savedCardRemove').addEventListener('click', () => removeFavorite(p.id, card));
+        
+        card.addEventListener('click', (e) => {
+          if (!e.target.classList.contains('savedCardRemove')) {
+            window.location.href = '/product.html?id=' + encodeURIComponent(p.id);
+          }
+        });
+
+        card.querySelector('.savedCardRemove').addEventListener('click', (e) => {
+          e.stopPropagation();
+          removeFavorite(p.id, card);
+        });
         container.appendChild(card);
       });
     }
 
+    /**
+     * Core Client Function: removeFavorite
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function removeFavorite(productId, cardEl) {
       try {
         await fetch('/api/favorites/' + productId, { method: 'DELETE' });
@@ -271,6 +311,10 @@
       if (e.target.id === 'redeemModal') e.target.classList.remove('open');
     });
 
+    /**
+     * Core Client Function: doRedeem
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function doRedeem(rewardId) {
       try {
         const res = await fetch('/api/loyalty/redeem', {
@@ -292,6 +336,10 @@
       }
     }
 
+    /**
+     * Core Client Function: logout
+     * Standardizes layout handling and logical rendering parameters natively.
+     */
     async function logout(e) {
       e.preventDefault();
       await fetch('/logout', { method: 'POST' });
@@ -302,7 +350,8 @@
 
     loadProfile();
     loadMyReservations();
-  </script>
+  
+</script>
   <script src="notifications.js"></script>
 </body>
 
