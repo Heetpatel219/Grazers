@@ -706,7 +706,10 @@ app.get('/api/owner/revenue', requireOwner, async (req, res) => {
         const next = new Date(d);
         next.setDate(next.getDate() + 1);
         const dayRevenue = reservations
-          .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
+          .filter(r => {
+            const date = r.confirmedAt ? new Date(r.confirmedAt) : new Date(r.createdAt);
+            return date >= d && date < next;
+          })
           .reduce((sum, r) => {
             if (r.items && r.items.length > 0) {
               return sum + r.items.reduce((s, i) => s + (i.priceAtReservation || 0) * (i.quantity || 1), 0);
@@ -731,7 +734,10 @@ app.get('/api/owner/revenue', requireOwner, async (req, res) => {
         const next = new Date(d);
         next.setDate(next.getDate() + 1);
         const dayRevenue = reservations
-          .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
+          .filter(r => {
+            const date = r.confirmedAt ? new Date(r.confirmedAt) : new Date(r.createdAt);
+            return date >= d && date < next;
+          })
           .reduce((sum, r) => {
             if (r.items && r.items.length > 0) {
               return sum + r.items.reduce((s, i) => s + (i.priceAtReservation || 0) * (i.quantity || 1), 0);
@@ -753,7 +759,10 @@ app.get('/api/owner/revenue', requireOwner, async (req, res) => {
         const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const next = new Date(d.getFullYear(), d.getMonth() + 1, 1);
         const monthRevenue = reservations
-          .filter(r => r.confirmedAt && new Date(r.confirmedAt) >= d && new Date(r.confirmedAt) < next)
+          .filter(r => {
+            const date = r.confirmedAt ? new Date(r.confirmedAt) : new Date(r.createdAt);
+            return date >= d && date < next;
+          })
           .reduce((sum, r) => {
             if (r.items && r.items.length > 0) {
               return sum + r.items.reduce((s, i) => s + (i.priceAtReservation || 0) * (i.quantity || 1), 0);

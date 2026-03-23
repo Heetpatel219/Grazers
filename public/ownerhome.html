@@ -255,7 +255,7 @@
     }
 
     .revenue-chart {
-      min-height: 200px;
+      height: 230px;
       display: flex;
       align-items: flex-end;
       gap: 8px;
@@ -264,8 +264,10 @@
 
     .revenue-bar-wrap {
       flex: 1;
+      height: 100%;
       display: flex;
       flex-direction: column;
+      justify-content: flex-end;
       align-items: center;
       min-width: 0;
     }
@@ -579,10 +581,16 @@
         data.forEach(d => {
           const wrap = document.createElement('div');
           wrap.className = 'revenue-bar-wrap';
-          const pct = maxRev > 0 ? (d.revenue / maxRev) * 100 : 0;
+          const pct = maxRev > 0 ? (d.revenue / maxRev) * 75 : 0;
           const parts = d.label.split(' ');
-          const labelHtml = parts.length === 2 ? `<div>${parts[0]}</div><div>${parts[1]}</div>` : d.label;
+          let labelHtml = d.label;
+          if (parts.length === 3) {
+            labelHtml = `<div>${parts[1]}</div><div>${parts[2]}</div>`;
+          } else if (parts.length === 2) {
+            labelHtml = `<div>${parts[0]}</div><div>${parts[1]}</div>`;
+          }
           wrap.innerHTML = `
+            <div style="font-size:0.75rem; font-weight:bold; margin-bottom:4px; color:var(--text-dark); text-align:center">$${d.revenue.toFixed(0)}</div>
             <div class="revenue-bar" style="height:${Math.max(pct, 2)}%"></div>
             <div class="revenue-bar-label">${labelHtml}</div>
           `;
