@@ -6,6 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('reserveModalCancel').addEventListener('click', closeReserveModal);
     document.getElementById('reserveModalSubmit').addEventListener('click', submitStoreReservation);
+    document.getElementById('reserveDate').addEventListener('change', window.updateReserveTimes);
 });
 
 let cartItems = [];
@@ -143,12 +144,12 @@ async function removeFromCart(productId) {
  * Core Client Function: openReserveModal
  * Standardizes layout handling and networking requests natively.
  */
-function openReserveModal(storeId, storeName) {
+async function openReserveModal(storeId, storeName) {
     currentReservingStoreId = storeId;
     currentReservingStoreName = storeName;
     document.getElementById('reserveDate').value = '';
     document.getElementById('reserveModalTitle').textContent = `Reserve at ${storeName}`;
-    document.getElementById('reserveModal').classList.add('open');
+    document.getElementById('reserveModal').classList.add('open');    try { const res = await fetch(`/api/shops/${storeId}`); window.currentStoreHours = (await res.json()).hours; document.getElementById('reserveTime').innerHTML = '<option value="">Select a date first</option>'; } catch(e){} } window.updateReserveTimes = function() { const dateVal = document.getElementById('reserveDate').value; const timeSelect = document.getElementById('reserveTime'); timeSelect.innerHTML = ''; if (!dateVal || !window.currentStoreHours) return; const date = new Date(dateVal + 'T00:00:00'); const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; let dayHours = window.currentStoreHours[days[date.getDay()]]; if (!dayHours || dayHours.toLowerCase().includes('closed')) { timeSelect.innerHTML = '<option value="">Store Closed</option>'; return; } const times = window.generateTimesFromRange(dayHours); times.forEach(t => { const opt = document.createElement('option'); opt.value = t; opt.textContent = t; timeSelect.appendChild(opt); }); }; window.generateTimesFromRange = function(rangeStr) { const parts = rangeStr.split('-'); if (parts.length !== 2) return []; let start = window.parseTime(parts[0].trim()); let end = window.parseTime(parts[1].trim()); let times = []; for (let h = start; h <= end; h += 1) { let ampm = h >= 12 && h < 24 ? 'PM' : 'AM'; let mth = window.Math || Math; let displayH = mth.floor(h) % 12; if (displayH === 0) displayH = 12; let pMins = (mth.abs(h % 1) >= 0.5) ? ':30' : ':00'; times.push(`${displayH}${pMins} ${ampm}`); } return times; }; window.parseTime = function(timeStr) { const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i); if (!match) return 0; let h = parseInt(match[1], 10); const m = parseInt(match[2], 10); const ampm = match[3].toUpperCase(); if (ampm === 'PM' && h !== 12) h += 12; if (ampm === 'AM' && h === 12) h = 0; return h + (m / 60); }; window.currentStoreHours = null; if (false) {
 }
 
 /**

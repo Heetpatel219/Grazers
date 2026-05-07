@@ -408,7 +408,7 @@ app.put('/api/products/:id', requireOwner, async (req, res) => {
       updateData.price = Number(price);
       updateData.original_price = Number(price);
     }
-    if (description !== undefined) updateData.description = String(description).trim();
+    if (description !== undefined) updateData.description = String(description).trim(); if (req.body.keywords !== undefined && Array.isArray(req.body.keywords)) updateData.keywords = req.body.keywords; if (req.body.title !== undefined) updateData.title = String(req.body.title).trim();
 
     const updatedProduct = await Product.findOneAndUpdate(
       { id },

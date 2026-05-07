@@ -446,7 +446,14 @@
         <img id="productImage" src="" alt="Product image" style="flex: 1; min-width: 0; margin-bottom: 0;">
         <div
           style="flex: 1; min-width: 0; background: #fff; padding: 15px 20px; border-radius: 16px; box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18); display: flex; flex-direction: column;">
-          <h3 style="margin-top: 0; font-size: 1rem; color: #374151; margin-bottom: 10px;">Price History</h3>
+          <h3 style="margin-top: 0; font-size: 1rem; color: #374151; margin-bottom: 10px; display: flex; justify-content: space-between;">
+            Price History
+            <div style="font-size: 0.8rem; font-weight: normal; display: flex; gap: 4px;">
+              <button type="button" onclick="window.currentPeriod='week'; generatePriceHistoryChart(window.currentProductData)" style="padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer;">Weekly</button>
+              <button type="button" onclick="window.currentPeriod='month'; generatePriceHistoryChart(window.currentProductData)" style="padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer;">Monthly</button>
+              <button type="button" onclick="window.currentPeriod='year'; generatePriceHistoryChart(window.currentProductData)" style="padding: 2px 6px; border: 1px solid #d1d5db; border-radius: 4px; background: #fff; cursor: pointer;">Yearly</button>
+            </div>
+          </h3>
           <div style="flex: 1; position: relative; min-height: 180px;">
             <canvas id="priceHistoryChart"
               style="position: absolute; left: 0; top: 0; width: 100%; height: 100%;"></canvas>
@@ -501,14 +508,23 @@
         <div class="price" id="productPrice"></div>
         <div id="ownerEditSection"
           style="display: none; margin-top: 15px; padding: 15px; background: #f3f4f6; border-radius: 12px;">
-          <h4 style="margin: 0 0 10px; font-size: 0.95rem; color: #374151;">Edit Product Details</h4>
-          <label style="display: block; font-size: 0.85rem; color: #4b5563; margin-bottom: 4px;">Price ($)</label>
-          <input type="number" id="editPrice" step="0.01"
-            style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px;">
-          <label style="display: block; font-size: 0.85rem; color: #4b5563; margin-bottom: 4px;">Description</label>
-          <textarea id="editDescription" rows="4"
-            style="width: 100%; padding: 8px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical;"></textarea>
-          <button type="button" id="saveProductBtn" class="btn-primary" style="width: 100%;">Save Changes</button>
+          
+          <h4 style="margin: 0 0 15px; font-size: 1.1rem; color: #111827; font-weight: 600; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px;">Edit Product Details</h4>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px;">
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 6px;">Title</label>
+              <input type="text" id="editTitle" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; transition: border-color 0.2s;">
+            </div>
+            <div>
+              <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 6px;">Price ($)</label>
+              <input type="number" id="editPrice" step="0.01" style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; transition: border-color 0.2s;">
+            </div>
+          </div>
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 6px;">Tags / Keywords (comma separated)</label>
+          <input type="text" id="editKeywords" placeholder="e.g. fashion, summer, tops" style="width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 12px; border: 1px solid #d1d5db; border-radius: 8px; font-family: inherit; transition: border-color 0.2s;">
+          <label style="display: block; font-size: 0.85rem; font-weight: 600; color: #4b5563; margin-bottom: 6px;">Description</label>
+          <textarea id="editDescription" rows="4" style="width: 100%; box-sizing: border-box; padding: 10px; margin-bottom: 16px; border: 1px solid #d1d5db; border-radius: 8px; resize: vertical; font-family: inherit; line-height: 1.5; transition: border-color 0.2s;"></textarea>
+          <button type="button" id="saveProductBtn" style="width: 100%; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 600; font-size: 1rem; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);">Save Changes</button>
           <p id="editMessage"
             style="font-size: 0.85rem; margin-top: 8px; text-align: center; color: var(--accent-green); display: none;">
             Changes saved!</p>
@@ -578,11 +594,12 @@
         offset = 2; 
       }
 
-      for (let i = offset; i <= 6; i++) {
+      const period = window.currentPeriod || 'month'; let numPoints = 30; if (period === 'week') numPoints = 7; else if (period === 'year') numPoints = 365;
+      for (let i = offset; i <= numPoints; i++) {
         const r = random();
         const pastPrice = pastBase * (0.6 + (r * 0.9));
         prices.unshift(pastPrice);
-        labels.unshift(i + 'mo ago');
+        labels.unshift(i + 'd ago');
       }
 
       priceChartInstance = new Chart(ctx, {
@@ -792,7 +809,8 @@
 
           document.getElementById('ownerEditSection').style.display = 'block';
           document.getElementById('editPrice').value = typeof product.price === 'number' ? product.price.toFixed(2) : (product.price || '0.00');
-          document.getElementById('editDescription').value = product.description || '';
+          document.getElementById('editTitle').value = product.title || '';
+          document.getElementById('editDescription').value = product.description || ''; document.getElementById('editKeywords').value = (product.keywords || []).join(', '); } window.currentProductData = product; if(false) {
         }
 
         const prStars = document.getElementById('productRatingStars');
@@ -1073,17 +1091,19 @@
       btn.textContent = 'Saving...';
       try {
         const price = document.getElementById('editPrice').value;
-        const description = document.getElementById('editDescription').value;
+        const title = document.getElementById('editTitle').value;
+        const description = document.getElementById('editDescription').value; const keywords = document.getElementById('editKeywords').value.split(',').map(k=>k.trim()).filter(Boolean);
         const res = await fetch('/api/products/' + encodeURIComponent(currentProductId), {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ price, description })
+          body: JSON.stringify({ price, description, keywords, title })
         });
         if (res.ok) {
           const updated = await res.json();
           const priceText = typeof updated.price === 'number' ? updated.price.toFixed(2) : (updated.price || '0.00');
           document.getElementById('productPrice').textContent = '$' + priceText;
           document.getElementById('productDescription').textContent = updated.description || 'No description available.';
+          document.getElementById('productTitle').textContent = updated.title || 'Product';
 
           generatePriceHistoryChart(updated);
 
@@ -1099,10 +1119,59 @@
       btn.disabled = false;
       btn.textContent = 'Save Changes';
     });
+    document.addEventListener('keydown', async (e) => {
+      if ((e.key === 'x' || e.key === 'X') && currentProductId) {
+        try {
+          const res = await fetch('/api/products/' + encodeURIComponent(currentProductId));
+          if (res.ok) {
+            const data = await res.json();
+            if (data.product) {
+              window.currentProductData = data.product;
+              generatePriceHistoryChart(data.product);
+              const p = data.product;
+              const priceEl = document.getElementById('productPrice');
+              if (p.original_price && p.original_price > p.price) {
+                const orig = p.original_price.toFixed(2);
+                const cur = p.price.toFixed(2);
+                const percent = Math.round((1 - (p.price / p.original_price)) * 100);
+                priceEl.innerHTML = `<span style="text-decoration: line-through; color: #dc2626; font-size: 1.2rem; margin-right: 8px;">$${orig}</span><span style="color: #10b981;">$${cur} <span style="font-size:1rem;">(-${percent}%)</span></span>`;
+              } else {
+                priceEl.textContent = '$' + (typeof p.price === 'number' ? p.price.toFixed(2) : p.price);
+              }
+            }
+          }
+        } catch (err) {}
+      }
+    });
     document.getElementById('refreshReservationStatus').addEventListener('click', loadReservationStatus);
 
     setupStarRating('productReviewStars');
     setupStarRating('storeReviewStars');
+
+    document.addEventListener('keydown', async (e) => {
+      if ((e.key === 'x' || e.key === 'X') && currentProductId) {
+        try {
+          const res = await fetch('/api/products/' + encodeURIComponent(currentProductId));
+          if (res.ok) {
+            const data = await res.json();
+            if (data.product) {
+              window.currentProductData = data.product;
+              generatePriceHistoryChart(data.product);
+              const p = data.product;
+              const priceEl = document.getElementById('productPrice');
+              if (p.original_price && p.original_price > p.price) {
+                const orig = p.original_price.toFixed(2);
+                const cur = p.price.toFixed(2);
+                const percent = Math.round((1 - (p.price / p.original_price)) * 100);
+                priceEl.innerHTML = `<span style="text-decoration: line-through; color: #dc2626; font-size: 1.2rem; margin-right: 8px;">$${orig}</span><span style="color: #10b981;">$${cur} <span style="font-size:1rem;">(-${percent}%)</span></span>`;
+              } else {
+                priceEl.textContent = '$' + (typeof p.price === 'number' ? p.price.toFixed(2) : p.price);
+              }
+            }
+          }
+        } catch (err) {}
+      }
+    });
 
     loadProductDetail();
   
