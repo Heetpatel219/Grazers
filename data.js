@@ -3,6 +3,7 @@ const Product = require('./models/Product');
 const Shop = require('./models/Shop');
 const Review = require('./models/Review');
 const Reservation = require('./models/Reservation');
+const bcrypt = require('bcrypt');
 
 const shopsToSeed = [
   {
@@ -717,7 +718,7 @@ async function seedDatabase() {
     });
     const UserModel = usersDb.model('User', userSchema);
     
-    const hashedPassword = '$2b$10$szmP14aG08c.5X2E3cM15Oa6PzLgK7yT8G2c9sR3Cg6F4mG1v.aKq'; // bcrypt hash for 'password'
+    const hashedPassword = bcrypt.hashSync('password', 10);
 
     const dummyUser = {
       name: "customer",
