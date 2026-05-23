@@ -9,7 +9,7 @@ const ReservationModel = require('./models/Reservation');
 const ReviewModel = require('./models/Review');
 const Category = require('./models/Category');
 const ProductModel = require('./models/Product');
-const grazersConn = mongoose.createConnection('mongodb://127.0.0.1:27017/Grazers');
+const grazersConn = mongoose.createConnection(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/Grazers');
 const Product = grazersConn.model('Product', ProductModel.schema);
 const Reservation = grazersConn.model('Reservation', ReservationModel.schema);
 const Review = grazersConn.model('Review', ReviewModel.schema);
@@ -31,9 +31,9 @@ app.use(session({
 /**
  * Formally establishes MongoDB persistence channels ensuring robust state networking.
  */
-mongoose.connect('mongodb://127.0.0.1:27017/Users')
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/Users')
   .then(async () => {
-    console.log("Success: Connected to Local MongoDB");
+    console.log("Success: Connected to MongoDB Database");
 
     try {
       const discountedProducts = await Product.find({ original_price: { $exists: true } });
@@ -53,7 +53,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/Users')
     }
 
   })
-  .catch(err => console.error("Local connection error:", err));
+  .catch(err => console.error("Database connection error:", err));
 const userSchema = new mongoose.Schema({
   name: {
     type: String,

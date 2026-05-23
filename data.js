@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const Product = require('./models/Product');
 const Shop = require('./models/Shop');
+const Review = require('./models/Review');
+const Reservation = require('./models/Reservation');
 
 const shopsToSeed = [
   {
@@ -518,13 +520,146 @@ const products = [
   }
 ];
 
+const reviewsToSeed = [
+  {
+    _id: new mongoose.Types.ObjectId("69a30c98f6a49d5e3cff59aa"),
+    productId: 105,
+    store_id: "s1",
+    store_name: "Dolllister",
+    userId: new mongoose.Types.ObjectId("697525228c951385ad616776"),
+    userName: "customer",
+    rating: 5,
+    comment: "Great Dress!",
+    storeReply: "",
+    createdAt: new Date("2026-02-28T15:41:12.102Z")
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69a30ca8f6a49d5e3cff59b2"),
+    store_id: "s1",
+    store_name: "Dolllister",
+    userId: new mongoose.Types.ObjectId("697525228c951385ad616776"),
+    userName: "customer",
+    rating: 5,
+    comment: "Good service",
+    storeReply: "Thank you for review",
+    createdAt: new Date("2026-02-28T15:41:28.285Z"),
+    storeReplyAt: new Date("2026-03-01T00:31:21.255Z")
+  }
+];
+
+const reservationsToSeed = [
+  {
+    _id: new mongoose.Types.ObjectId("69c14e0788e3f158bf8db916"),
+    items: [
+      {
+        productId: 101,
+        productTitle: "Women's Top",
+        quantity: 1,
+        priceAtReservation: 29.95,
+        image: "https://img.hollisterco.com/is/image/anf/KIC_352-6037-00382-610_prod1?policy=product-extra-large"
+      }
+    ],
+    store_id: "s1",
+    store_name: "Dolllister",
+    userId: new mongoose.Types.ObjectId("697525228c951385ad616776"),
+    userName: "customer",
+    status: "confirmed",
+    preferredDate: new Date("2026-03-25T00:00:00.000Z"),
+    preferredTime: "9:00 AM",
+    createdAt: new Date("2026-03-23T14:28:23.886Z"),
+    confirmedAt: new Date("2026-03-23T14:29:13.846Z")
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69c1523e88e3f158bf8db9ef"),
+    items: [
+      {
+        productId: 404,
+        productTitle: "Hat",
+        quantity: 1,
+        priceAtReservation: 25.00,
+        image: "https://media.gamestop.com/i/gamestop/20014306/Super-Mario-Bros-Mario-Cosplay-Hat?w=1256&h=664&fmt=auto"
+      }
+    ],
+    store_id: "s4",
+    store_name: "Gamer’s Stop",
+    userId: new mongoose.Types.ObjectId("697525228c951385ad616776"),
+    userName: "customer",
+    status: "pending",
+    preferredDate: new Date("2026-03-24T00:00:00.000Z"),
+    preferredTime: "9:00 AM",
+    createdAt: new Date("2026-03-23T14:46:22.933Z")
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69e2a396450535db903b1525"),
+    items: [
+      {
+        productId: 201,
+        productTitle: "Children Shoe",
+        quantity: 1,
+        priceAtReservation: 39.99,
+        image: "https://assets.designerbrands.com/match/Site_Name/897102125_160_ss_01/?quality=85&io=transform:fit,width:1280"
+      }
+    ],
+    store_id: "s2",
+    store_name: "Tikes",
+    userId: new mongoose.Types.ObjectId("697525228c951385ad616776"),
+    userName: "customer",
+    status: "pending",
+    preferredDate: new Date("2026-04-17T00:00:00.000Z"),
+    preferredTime: "10:00 AM",
+    createdAt: new Date("2026-04-17T21:18:14.852Z")
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69e2a9e9450535db903b154b"),
+    items: [
+      {
+        productId: 103,
+        productTitle: "Women's Bottom",
+        quantity: 1,
+        priceAtReservation: 49.95,
+        image: "https://img.hollisterco.com/is/image/anf/KIC_347-6055-00357-610_prod1?policy=product-extra-large"
+      }
+    ],
+    store_id: "s1",
+    store_name: "Dolllister",
+    userId: new mongoose.Types.ObjectId("697525228c951385ad616776"),
+    userName: "customer",
+    status: "confirmed",
+    preferredDate: new Date("2026-04-17T00:00:00.000Z"),
+    preferredTime: "8:00 AM",
+    createdAt: new Date("2026-04-17T21:45:13.359Z"),
+    confirmedAt: new Date("2026-04-17T21:45:40.473Z")
+  },
+  {
+    _id: new mongoose.Types.ObjectId("69e2ac25450535db903b15aa"),
+    items: [
+      {
+        productId: 105,
+        productTitle: "Women's Dress",
+        quantity: 1,
+        priceAtReservation: 44.95,
+        image: "https://img.hollisterco.com/is/image/anf/KIC_359-6021-00357-601_prod1?policy=product-large"
+      }
+    ],
+    store_id: "s1",
+    store_name: "Dolllister",
+    userId: new mongoose.Types.ObjectId("697525228c951385ad616776"),
+    userName: "customer",
+    status: "confirmed",
+    preferredDate: new Date("2026-04-18T00:00:00.000Z"),
+    preferredTime: "9:00 AM",
+    createdAt: new Date("2026-04-17T21:54:45.729Z"),
+    confirmedAt: new Date("2026-04-17T21:55:16.930Z")
+  }
+];
+
 /**
  * Core Client Function: seedDatabase
  * Standardizes layout handling and logical rendering parameters natively.
  */
 async function seedDatabase() {
   try {
-    await mongoose.connect('mongodb://127.0.0.1:27017/Grazers');
+    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/Grazers');
     console.log("Connected to MongoDB...");
 
     for (const p of products) {
@@ -537,7 +672,29 @@ async function seedDatabase() {
       );
     }
 
-    const usersDb = await mongoose.createConnection('mongodb://127.0.0.1:27017/Users');
+    console.log("Seeding reviews...");
+    for (const r of reviewsToSeed) {
+      await Review.findOneAndUpdate(
+        { _id: r._id }, r, {
+          upsert: true,
+          new: true,
+          runValidators: true
+        }
+      );
+    }
+
+    console.log("Seeding reservations...");
+    for (const res of reservationsToSeed) {
+      await Reservation.findOneAndUpdate(
+        { _id: res._id }, res, {
+          upsert: true,
+          new: true,
+          runValidators: true
+        }
+      );
+    }
+
+    const usersDb = await mongoose.createConnection(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/Users');
     const ShopModel = usersDb.model('Shop', Shop.schema);
     
     console.log("Connected to MongoDB Users DB to update shops...");
@@ -549,6 +706,30 @@ async function seedDatabase() {
       );
     }
     console.log(`Successfully perfectly synchronized ${shopsToSeed.length} shops!`);
+
+    console.log("Upserting dummy customer user...");
+    const userSchema = new mongoose.Schema({
+      name: { type: String, required: true },
+      email: { type: String, required: true, unique: true },
+      username: { type: String, default: '' },
+      password: { type: String, required: true },
+      isOwner: { type: Boolean, default: false }
+    });
+    const UserModel = usersDb.model('User', userSchema);
+    
+    const dummyUser = {
+      name: "customer",
+      email: "customer@example.com",
+      username: "customer",
+      password: "dummy_password_hash",
+      isOwner: false
+    };
+    await UserModel.findOneAndUpdate(
+      { _id: new mongoose.Types.ObjectId("697525228c951385ad616776") },
+      { ...dummyUser, _id: new mongoose.Types.ObjectId("697525228c951385ad616776") },
+      { upsert: true, new: true }
+    );
+    console.log("Successfully seeded dummy customer user!");
     
     await usersDb.close();
     await mongoose.disconnect();
