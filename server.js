@@ -19,15 +19,64 @@ const PORT = 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static('public'));
-app.use(session({
-  secret: 'mysecretkey',
-  resave: false,
-  saveUninitialized: false,
-  cookie: {
-    secure: false,
-    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+const sessionSchema = new mongoose.Schema({
+  sessionId: { type: String, required: true, unique: true },
+  userId: { type: String, required: true },
+  userName: String,
+  userEmail: String,
+  isOwner: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now, expires: 86400 }
+});
+const SessionModel = grazersConn.model('Session', sessionSchema);
+
+const parseCookies = (req) => {
+  const list = {};
+  const rc = req.headers.cookie;
+  if (rc) {
+    rc.split(';').forEach(cookie => {
+      const parts = cookie.split('=');
+      list[parts.shift().trim()] = decodeURI(parts.join('='));
+    });
   }
-}));
+  return list;
+};
+
+app.use(async (req, res, next) => {
+  const cookies = parseCookies(req);
+  const sessionId = cookies.sessionId;
+
+  req.session = {
+    destroy: async (callback) => {
+      try {
+        if (sessionId) {
+          await SessionModel.deleteOne({ sessionId });
+        }
+        res.setHeader('Set-Cookie', 'sessionId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly');
+        callback(null);
+      } catch (err) {
+        callback(err);
+      }
+    },
+    save: (callback) => {
+      callback(null);
+    }
+  };
+
+  if (sessionId) {
+    try {
+      const sessionDoc = await SessionModel.findOne({ sessionId });
+      if (sessionDoc) {
+        req.session.userId = sessionDoc.userId;
+        req.session.userName = sessionDoc.userName;
+        req.session.userEmail = sessionDoc.userEmail;
+        req.session.isOwner = sessionDoc.isOwner;
+      }
+    } catch (err) {
+      console.error('Session middleware error:', err);
+    }
+  }
+  next();
+});
 /**
  * Formally establishes MongoDB persistence channels ensuring robust state networking.
  */
@@ -232,20 +281,26 @@ app.post('/signin', async (req, res) => {
 
     if (!email || !password) {
       return res.status(400).json({ message: 'Email and password are required' });
-    }
+    }
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(401).json({ message: 'Invalid credentials' });
-    }
+    }
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(401).json({ message: 'Invalid credentials' });
-    }
-    req.session.userId = user._id;
-    req.session.userName = user.name;
-    req.session.userEmail = user.email;
+    }
 
-    req.session.isOwner = user.isOwner || false;
+    const sessionId = Math.random().toString(36).substring(2) + Date.now().toString(36);
+    await SessionModel.create({
+      sessionId,
+      userId: user._id.toString(),
+      userName: user.name,
+      userEmail: user.email,
+      isOwner: user.isOwner || false
+    });
+
+    res.setHeader('Set-Cookie', `sessionId=${sessionId}; Path=/; Max-Age=86400; HttpOnly`);
     res.status(200).json({
       message: 'Sign-in successful',
       isOwner: user.isOwner || false
