@@ -266,23 +266,31 @@ app.post('/api/quick-login', async (req, res) => {
     const { role } = req.body;
     let user;
     if (role === 'owner') {
-      user = await User.findOne({ isOwner: true });
+      user = await User.findOne({ email: 'owner@example.com' });
+      if (!user) user = await User.findOne({ isOwner: true });
     } else {
-      user = await User.findOne({ isOwner: false });
+      user = await User.findOne({ email: 'customer@example.com' });
+      if (!user) user = await User.findOne({ isOwner: false });
     }
 
     if (!user) {
       return res.status(404).json({ message: 'No suitable user found for quick login' });
     }
 
-    req.session.userId = user._id;
+    req.session.userId = user._id.toString();
     req.session.userName = user.name;
     req.session.userEmail = user.email;
     req.session.isOwner = user.isOwner || false;
 
-    res.status(200).json({
-      message: 'Quick sign-in successful',
-      isOwner: user.isOwner || false
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ message: 'Error saving quick session' });
+      }
+      res.status(200).json({
+        message: 'Quick sign-in successful',
+        isOwner: user.isOwner || false
+      });
     });
   } catch (error) {
     console.error('Quick login error:', error);
