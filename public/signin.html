@@ -30,6 +30,14 @@
             <button type="submit">Sign In</button>
         </form>
 
+        <div style="margin-top: 25px; border-top: 1px solid #e5e7eb; padding-top: 20px;">
+            <p style="font-size: 0.8rem; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; margin-bottom: 12px;">Demo Quick Sign In</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <button type="button" id="quickCustomerBtn" style="background: linear-gradient(135deg, #10b981, #059669); font-weight: 600; font-size: 0.85rem; padding: 10px; margin-top: 0; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.15); border-radius: 10px;">Customer</button>
+                <button type="button" id="quickOwnerBtn" style="background: linear-gradient(135deg, #3b82f6, #2563eb); font-weight: 600; font-size: 0.85rem; padding: 10px; margin-top: 0; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.15); border-radius: 10px;">Business</button>
+            </div>
+        </div>
+
         <p id="message"></p>
 
         <p class="switch">
@@ -76,6 +84,41 @@
                 messageEl.style.color = 'red';
             }
         });
+
+        const handleQuickLogin = async (role) => {
+            const messageEl = document.getElementById('message');
+            try {
+                const response = await fetch('/api/quick-login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ role })
+                });
+
+                const data = await response.json();
+                messageEl.textContent = data.message;
+                messageEl.style.color = response.ok ? 'green' : 'red';
+
+                if (response.ok) {
+                    if (data.isOwner) {
+                        setTimeout(() => {
+                            window.location.href = '/ownerhome.html';
+                        }, 1000);
+                    } else {
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 1000);
+                    }
+                }
+            } catch (error) {
+                messageEl.textContent = 'Error: ' + error.message;
+                messageEl.style.color = 'red';
+            }
+        };
+
+        document.getElementById('quickCustomerBtn').addEventListener('click', () => handleQuickLogin('customer'));
+        document.getElementById('quickOwnerBtn').addEventListener('click', () => handleQuickLogin('owner'));
     </script>
 
 </body>

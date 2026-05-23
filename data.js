@@ -707,7 +707,7 @@ async function seedDatabase() {
     }
     console.log(`Successfully perfectly synchronized ${shopsToSeed.length} shops!`);
 
-    console.log("Upserting dummy customer user...");
+    console.log("Upserting dummy customer and business owner users...");
     const userSchema = new mongoose.Schema({
       name: { type: String, required: true },
       email: { type: String, required: true, unique: true },
@@ -717,11 +717,13 @@ async function seedDatabase() {
     });
     const UserModel = usersDb.model('User', userSchema);
     
+    const hashedPassword = '$2b$10$szmP14aG08c.5X2E3cM15Oa6PzLgK7yT8G2c9sR3Cg6F4mG1v.aKq'; // bcrypt hash for 'password'
+
     const dummyUser = {
       name: "customer",
       email: "customer@example.com",
       username: "customer",
-      password: "dummy_password_hash",
+      password: hashedPassword,
       isOwner: false
     };
     await UserModel.findOneAndUpdate(
@@ -729,7 +731,20 @@ async function seedDatabase() {
       { ...dummyUser, _id: new mongoose.Types.ObjectId("697525228c951385ad616776") },
       { upsert: true, new: true }
     );
-    console.log("Successfully seeded dummy customer user!");
+
+    const dummyOwner = {
+      name: "Shop Owner",
+      email: "owner@example.com",
+      username: "owner",
+      password: hashedPassword,
+      isOwner: true
+    };
+    await UserModel.findOneAndUpdate(
+      { _id: new mongoose.Types.ObjectId("697525228c951385ad616778") },
+      { ...dummyOwner, _id: new mongoose.Types.ObjectId("697525228c951385ad616778") },
+      { upsert: true, new: true }
+    );
+    console.log("Successfully seeded dummy customer and business owner users!");
     
     await usersDb.close();
     await mongoose.disconnect();
