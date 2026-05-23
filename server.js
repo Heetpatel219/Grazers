@@ -258,47 +258,6 @@ app.post('/signin', async (req, res) => {
 });
 
 /**
- * Core Route: POST /api/quick-login
- * Direct login bypass for testing and evaluation.
- */
-app.post('/api/quick-login', async (req, res) => {
-  try {
-    const { role } = req.body;
-    let user;
-    if (role === 'owner') {
-      user = await User.findOne({ email: 'owner@example.com' });
-      if (!user) user = await User.findOne({ isOwner: true });
-    } else {
-      user = await User.findOne({ email: 'customer@example.com' });
-      if (!user) user = await User.findOne({ isOwner: false });
-    }
-
-    if (!user) {
-      return res.status(404).json({ message: 'No suitable user found for quick login' });
-    }
-
-    req.session.userId = user._id.toString();
-    req.session.userName = user.name;
-    req.session.userEmail = user.email;
-    req.session.isOwner = user.isOwner || false;
-
-    req.session.save((err) => {
-      if (err) {
-        console.error('Session save error:', err);
-        return res.status(500).json({ message: 'Error saving quick session' });
-      }
-      res.status(200).json({
-        message: 'Quick sign-in successful',
-        isOwner: user.isOwner || false
-      });
-    });
-  } catch (error) {
-    console.error('Quick login error:', error);
-    res.status(500).json({ message: 'Error during quick login' });
-  }
-});
-
-/**
  * Core Route: POST /api/random-price-drop
  * Executes high-performance networking protocols natively mapped to backend databases.
  */

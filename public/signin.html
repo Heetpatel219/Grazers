@@ -85,40 +85,17 @@
             }
         });
 
-        const handleQuickLogin = async (role) => {
-            const messageEl = document.getElementById('message');
-            try {
-                const response = await fetch('/api/quick-login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ role })
-                });
-
-                const data = await response.json();
-                messageEl.textContent = data.message;
-                messageEl.style.color = response.ok ? 'green' : 'red';
-
-                if (response.ok) {
-                    if (data.isOwner) {
-                        setTimeout(() => {
-                            window.location.href = '/ownerhome.html';
-                        }, 1000);
-                    } else {
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 1000);
-                    }
-                }
-            } catch (error) {
-                messageEl.textContent = 'Error: ' + error.message;
-                messageEl.style.color = 'red';
-            }
+        const handleQuickLogin = (email, password) => {
+            document.getElementById('email').value = email;
+            document.getElementById('password').value = password;
+            // Dispatch a submit event on the form to run the regular sign-in handler
+            const form = document.getElementById('signinForm');
+            const submitEvent = new Event('submit', { cancelable: true, bubbles: true });
+            form.dispatchEvent(submitEvent);
         };
 
-        document.getElementById('quickCustomerBtn').addEventListener('click', () => handleQuickLogin('customer'));
-        document.getElementById('quickOwnerBtn').addEventListener('click', () => handleQuickLogin('owner'));
+        document.getElementById('quickCustomerBtn').addEventListener('click', () => handleQuickLogin('customer@example.com', 'password'));
+        document.getElementById('quickOwnerBtn').addEventListener('click', () => handleQuickLogin('owner@example.com', 'password'));
     </script>
 
 </body>
