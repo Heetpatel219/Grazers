@@ -4,30 +4,36 @@ const bcrypt = require('bcrypt');
 const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
-const Shop = require('./models/Shop');
+const ShopModel = require('./models/Shop');
 const ReservationModel = require('./models/Reservation');
 const ReviewModel = require('./models/Review');
-const Category = require('./models/Category');
-const ProductModel = require('./models/Product');
+const CategoryModel = require('./models/Category');
+const ProductModel = require('./models/Product');
+
+// Use a single connection — Atlas URIs already include the database name
+// so creating a second connection with createConnection() pointed at the same URI
+// would resolve to the same database anyway.
 const grazersConn = mongoose.createConnection(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/Grazers');
 const Product = grazersConn.model('Product', ProductModel.schema);
 const Reservation = grazersConn.model('Reservation', ReservationModel.schema);
 const Review = grazersConn.model('Review', ReviewModel.schema);
-
-const app = express();
-const PORT = 3000;
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
-app.use(express.static('public'));
-const sessionSchema = new mongoose.Schema({
+const Shop = grazersConn.model('Shop', ShopModel.schema);
+const Category = grazersConn.model('Category', CategoryModel.schema);
+const SessionModel = grazersConn.model('Session', new mongoose.Schema({
   sessionId: { type: String, required: true, unique: true },
   userId: { type: String, required: true },
   userName: String,
   userEmail: String,
   isOwner: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now, expires: 86400 }
-});
-const SessionModel = grazersConn.model('Session', sessionSchema);
+}));
+
+const app = express();
+const PORT = 3000;
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.static('public'));
+// SessionModel is now defined above alongside the other grazersConn models
 
 const parseCookies = (req) => {
   const list = {};
@@ -51,7 +57,9 @@ app.use(async (req, res, next) => {
         if (sessionId) {
           await SessionModel.deleteOne({ sessionId });
         }
-        res.setHeader('Set-Cookie', 'sessionId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly');
+        const isSecure = req.headers['x-forwarded-proto'] === 'https' || req.secure;
+        const secureFlag = isSecure ? '; Secure' : '';
+        res.setHeader('Set-Cookie', `sessionId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; SameSite=Lax${secureFlag}`);
         callback(null);
       } catch (err) {
         callback(err);
@@ -77,32 +85,27 @@ app.use(async (req, res, next) => {
   }
   next();
 });
-/**
- * Formally establishes MongoDB persistence channels ensuring robust state networking.
- */
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/Users')
-  .then(async () => {
-    console.log("Success: Connected to MongoDB Database");
-
-    try {
-      const discountedProducts = await Product.find({ original_price: { $exists: true } });
-      let resetCount = 0;
-      for (const p of discountedProducts) {
-        if (p.original_price > p.price) {
-          p.price = p.original_price;
-          await p.save();
-          resetCount++;
-        }
+// Run startup logic (reset flash-sale prices) once grazersConn is open
+grazersConn.once('open', async () => {
+  console.log('Success: Connected to MongoDB Database (Grazers)');
+  try {
+    const discountedProducts = await Product.find({ original_price: { $exists: true } });
+    let resetCount = 0;
+    for (const p of discountedProducts) {
+      if (p.original_price > p.price) {
+        p.price = p.original_price;
+        await p.save();
+        resetCount++;
       }
-      if (resetCount > 0) {
-        console.log(`[Revert] Automatically reset ${resetCount} items from their flash sales!`);
-      }
-    } catch (e) {
-      console.error('Error resetting prices on startup:', e);
     }
+    if (resetCount > 0) {
+      console.log(`[Revert] Automatically reset ${resetCount} items from their flash sales!`);
+    }
+  } catch (e) {
+    console.error('Error resetting prices on startup:', e);
+  }
+});
 
-  })
-  .catch(err => console.error("Database connection error:", err));
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -141,7 +144,8 @@ const userSchema = new mongoose.Schema({
   }]
 });
 
-const User = mongoose.model('User', userSchema);
+// Use grazersConn so all models live in the same database
+const User = grazersConn.model('User', userSchema);
 const requireAuth = (req, res, next) => {
   if (req.session && req.session.userId) return next();
   if (req.path.startsWith('/api')) return res.status(401).json({ error: 'Unauthorized' });
@@ -300,7 +304,9 @@ app.post('/signin', async (req, res) => {
       isOwner: user.isOwner || false
     });
 
-    res.setHeader('Set-Cookie', `sessionId=${sessionId}; Path=/; Max-Age=86400; HttpOnly`);
+    const isSecure = req.headers['x-forwarded-proto'] === 'https' || req.secure;
+    const secureFlag = isSecure ? '; Secure' : '';
+    res.setHeader('Set-Cookie', `sessionId=${sessionId}; Path=/; Max-Age=86400; HttpOnly; SameSite=Lax${secureFlag}`);
     res.status(200).json({
       message: 'Sign-in successful',
       isOwner: user.isOwner || false
