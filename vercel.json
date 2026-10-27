@@ -1,15 +1,12 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
-  ],
+  "outputDirectory": "public",
   "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/server.js"
-    }
+    { "src": "/signin",  "dest": "/signin.html" },
+    { "src": "/signup",  "dest": "/signup.html" },
+    { "src": "/profile", "dest": "/profile.html" },
+    { "src": "/cart",    "dest": "/cart.html" },
+    { "src": "/stores",  "dest": "/stores.html" },
+    { "src": "/(.*)",    "dest": "/$1" }
   ]
 }

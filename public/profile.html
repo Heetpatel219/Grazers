@@ -9,6 +9,8 @@
   <link rel="stylesheet" href="profile.css" />
   <link rel="stylesheet" href="notifications.css" />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="/grazers-data.js"></script>
+  <script src="/grazers-store.js"></script>
 </head>
 
 <body>
@@ -349,6 +351,7 @@
     document.getElementById('refreshReservationsBtn').addEventListener('click', loadMyReservations);
 
     loadProfile();
+    loadRewards();
     loadMyReservations();
   
 </script>
