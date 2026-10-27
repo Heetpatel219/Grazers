@@ -1,12 +1,17 @@
 {
   "version": 2,
-  "outputDirectory": "public",
+  "builds": [
+    {
+      "src": "public/**/*",
+      "use": "@vercel/static"
+    }
+  ],
   "routes": [
-    { "src": "/signin",  "dest": "/signin.html" },
-    { "src": "/signup",  "dest": "/signup.html" },
-    { "src": "/profile", "dest": "/profile.html" },
-    { "src": "/cart",    "dest": "/cart.html" },
-    { "src": "/stores",  "dest": "/stores.html" },
-    { "src": "/(.*)",    "dest": "/$1" }
+    { "src": "/signin",  "dest": "/public/signin.html" },
+    { "src": "/signup",  "dest": "/public/signup.html" },
+    { "src": "/profile", "dest": "/public/profile.html" },
+    { "src": "/cart",    "dest": "/public/cart.html" },
+    { "src": "/stores",  "dest": "/public/stores.html" },
+    { "src": "/(.*)",    "dest": "/public/$1" }
   ]
 }
